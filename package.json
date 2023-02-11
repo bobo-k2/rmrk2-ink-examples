@@ -1,0 +1,24 @@
+{
+  "name": "rmrk2-ink-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scripts for creating and miniting RMRK2 NFTS via Ink! contract",
+  "main": "index.js",
+  "author": "Bobo K.",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^2.4.1"
+  },
+  "scripts": {
+    "dev": "yarn workspace rmrk2-demo dev"
+  },
+  "workspaces": {
+    "packages": [
+      "projects/*"
+    ],
+    "nohoist": [
+      "**/scripts",
+      "**/scripts/**"
+    ]
+  }
+}
