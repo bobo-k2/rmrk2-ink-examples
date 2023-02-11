@@ -2,7 +2,6 @@ import {
   executeCall,
   executeCallWithValue,
   getContract,
-  getGasLimit,
   getSigner,
 } from './common_api';
 import {
@@ -12,16 +11,17 @@ import {
   CHUNKY_PARTS_ADDRESS,
 } from './consts';
 
-const storageDepositLimit = null;
-
 /**
  * Builds muti asset equipable Chunky NFT. Based on:
  * https://github.com/rmrk-team/evm-sample-contracts/tree/master/contracts/MergedEquippable
  *
  */
-const buildToken = async () => {
-  const chunky = await getContract(CHUNKY_ADDRESSS);
-  const chunkyParts = await getContract(CHUNKY_PARTS_ADDRESS);
+export const buildToken = async (
+  chunkyAddress = CHUNKY_ADDRESSS,
+  chunkyPartsAddress = CHUNKY_PARTS_ADDRESS
+) => {
+  const chunky = await getContract(chunkyAddress);
+  const chunkyParts = await getContract(chunkyPartsAddress);
   const alice = getSigner(ALICE_URI);
   const bob = getSigner(BOB_URI);
   const pricePerMint = BigInt(1_000_000_000_000_000_000);
@@ -296,5 +296,3 @@ const buildToken = async () => {
     )
   );
 };
-
-buildToken();

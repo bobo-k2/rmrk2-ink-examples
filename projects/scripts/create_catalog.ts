@@ -103,5 +103,3 @@ export const createCatalog = async (contractAddress = CHUNKY_PARTS_ADDRESS): Pro
   console.log('Adding base parts');
   await executeCall(contract, 'base::addPartList', alice, allParts);
 };
-
-// createCatalog();

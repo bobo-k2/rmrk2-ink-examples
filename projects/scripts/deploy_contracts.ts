@@ -47,6 +47,7 @@ const deployRmrkContract = async (
 };
 
 export const deployChunkyContract = async (deployer: KeyringPair): Promise<string> => {
+  console.log('Deploying Chunky contract...');
   const contractAddress = await deployRmrkContract(
     'Chunky',
     'CHK',
@@ -57,11 +58,13 @@ export const deployChunkyContract = async (deployer: KeyringPair): Promise<strin
     deployer.address,
     1
   );
-
+  
+  console.log(`Chunky contract deployed at address ${contractAddress}`);
   return contractAddress;
 };
 
 export const deployChunkyPartsContract = async (deployer: KeyringPair): Promise<string> => {
+  console.log('Deploying Chunky Parts contract...');
   const contractAddress = await deployRmrkContract(
     'Chunky Parts',
     'CHKP',
@@ -73,6 +76,7 @@ export const deployChunkyPartsContract = async (deployer: KeyringPair): Promise<
     1
   );
 
+  console.log(`Chunky Parts contract deployed at address ${contractAddress}`);
   return contractAddress;
 };
 
@@ -82,5 +86,3 @@ const deployContracts = async (): Promise<void> => {
   console.log(`Deployed Chunky contract with address ${await deployChunkyContract(alice)}`);
   console.log(`Deployed Chunky parts contract with address ${await deployChunkyPartsContract(alice)}`);
 }
-
-// deployContracts();
