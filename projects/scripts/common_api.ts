@@ -1,9 +1,10 @@
 import { ApiPromise, WsProvider, Keyring } from '@polkadot/api';
-import type { KeyringPair } from '@polkadot/keyring/types';
+import { KeyringPair } from '@polkadot/keyring/types';
 import { Abi, ContractPromise } from '@polkadot/api-contract';
 import { WeightV2, DispatchError } from '@polkadot/types/interfaces';
 import { ISubmittableResult } from '@polkadot/types/types';
 import { rmrkAbi } from '../abi/rmrk';
+import { ApiBase } from '@polkadot/api/base';
 
 // const WSS_ENDPOINT = "wss://shibuya-rpc.dwellir.com";
 // const CONTRACT_ADDRESS = "Whc3ikvddB9u4cgHHYA3eZWSiPuciWSxgiY4xZQjvbv9SeT";
@@ -36,8 +37,8 @@ export const getContract = async (
   return new ContractPromise(api, abi, address);
 };
 
-export const getGasLimit = (contract: ContractPromise): WeightV2 => {
-  return contract.api.registry.createType('WeightV2', {
+export const getGasLimit = (api: ApiPromise | ApiBase<'promise'>): WeightV2 => {
+  return api.registry.createType('WeightV2', {
     REF_TIME,
     PROOF_SIZE,
   }) as WeightV2;
@@ -60,7 +61,7 @@ export const executeCallWithValue = async (
   const txResult = await contract.query[call](
     signer.address,
     {
-      gasLimit: getGasLimit(contract),
+      gasLimit: getGasLimit(contract.api),
       storageDepositLimit: null,
       value
     },
@@ -72,7 +73,7 @@ export const executeCallWithValue = async (
   return new Promise((resolve) => {
     contract.tx[call](
       {
-        gasLimit: getGasLimit(contract),
+        gasLimit: getGasLimit(contract.api),
         storageDepositLimit: null,
         value,
       },

@@ -22,7 +22,6 @@ const storageDepositLimit = null;
 const buildToken = async () => {
   const chunky = await getContract(CHUNKY_ADDRESSS);
   const chunkyParts = await getContract(CHUNKY_PARTS_ADDRESS);
-  const gasLimit = getGasLimit(chunky);
   const alice = getSigner(ALICE_URI);
   const bob = getSigner(BOB_URI);
   const pricePerMint = BigInt(1_000_000_000_000_000_000);
@@ -269,21 +268,6 @@ const buildToken = async () => {
   );
 
   // *************************************** Bob equips bones.
-
-  const result = await chunky.query['equippable::equip'](
-    bob.address,
-    {
-      gasLimit: getGasLimit(chunky),
-      storageDepositLimit: null,
-    },
-    tokenId,
-    assetComposedId,
-    12, // slot
-    [chunkyParts.address, tokenId],
-    boneLeftId
-  );
-
-  console.log(result.output.toHuman());
 
   console.log('Equipping bones');
   console.log(

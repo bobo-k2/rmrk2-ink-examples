@@ -1,6 +1,6 @@
 import { Codec } from '@polkadot/types-codec/types';
 import { ALICE_URI, CHUNKY_PARTS_ADDRESS } from './consts';
-import { getContract, getGasLimit, getSigner } from './common_api';
+import { executeCall, getContract, getGasLimit, getSigner } from './common_api';
 
 const storageDepositLimit = null;
 const ASSETS_CID = 'QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL';
@@ -95,49 +95,13 @@ const getSlotParts = (equippable: string[] | '*' = []): IBasePart[] => {
   ];
 };
 
-const createCatalog = async (): Promise<void> => {
-  const contract = await getContract(CHUNKY_PARTS_ADDRESS);
-  const gasLimit = getGasLimit(contract);
+export const createCatalog = async (contractAddress = CHUNKY_PARTS_ADDRESS): Promise<void> => {
+  const contract = await getContract(contractAddress);
+  const alice = getSigner(ALICE_URI);
+  const allParts = [...fixedParts, ...getSlotParts([contractAddress])];
 
-  const signer = getSigner(ALICE_URI);
-
-  // Collection Id
-  const { output: collectionIdOutput } = await contract.query[
-    'psp34::collectionId'
-  ](signer.address, {
-    gasLimit,
-    storageDepositLimit,
-  });
-  const collectionId = (<Id>collectionIdOutput).asBytes.toHex();
-
-  // addPartList try run (not needed, because max gas has been sent)
-  const { result } = await contract.query['base::addPartList'](
-    signer.address,
-    {
-      gasLimit,
-      storageDepositLimit,
-    },
-    fixedParts
-  );
-
-  if (result.isOk) {
-    const allParts = [...fixedParts, ...getSlotParts([CHUNKY_PARTS_ADDRESS])];
-    await contract.tx['base::addPartList'](
-      {
-        gasLimit,
-        storageDepositLimit,
-      },
-      allParts
-    ).signAndSend(signer, (result) => {
-      console.log(
-        `Status: ${result.status.toHuman()}, is error: ${result.isError}`
-      );
-    });
-  } else {
-    console.error(
-      `base::addPartList try run failed with error: ${result.asErr}`
-    );
-  }
+  console.log('Adding base parts');
+  await executeCall(contract, 'base::addPartList', alice, allParts);
 };
 
-createCatalog();
+// createCatalog();
