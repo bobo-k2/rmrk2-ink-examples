@@ -1,12 +1,14 @@
 import { Codec } from '@polkadot/types-codec/types';
 import { ALICE_URI, CHUNKY_PARTS_ADDRESS } from './consts';
-import { executeCall, getContract, getGasLimit, getSigner } from './common_api';
+import { executeCall, getContract, getSigner } from './common_api';
 
 const storageDepositLimit = null;
 const ASSETS_CID = 'QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL';
 
-interface IBasePart {
-  partType: 'None' | 'Slot' | 'Fixed';
+export type PartType = 'None' | 'Slot' | 'Fixed';
+
+export interface IBasePart {
+  partType: PartType;
   equippable?: string[] | '*';
   metadataUri?: string;
   isEquippableByAll?: boolean;

@@ -68,7 +68,7 @@ export const deployChunkyPartsContract = async (deployer: KeyringPair): Promise<
   const contractAddress = await deployRmrkContract(
     'Chunky Parts',
     'CHKP',
-    'ipfs://base',
+    'ipfs://bafybeiczm5ltdr3b6xnvdx3sqnx6ffxjj5bsp7mhpfif2ibf5mxon3txiq',
     BigInt(100),
     BigInt(1_000_000_000_000_000_000),
     'ipfs://collection',

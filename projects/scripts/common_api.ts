@@ -58,6 +58,8 @@ export const executeCallWithValue = async (
   value = null,
   ...params: unknown[]
 ): Promise<boolean> => {
+
+  // Try run
   const txResult = await contract.query[call](
     signer.address,
     {
