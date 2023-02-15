@@ -6,7 +6,7 @@ The ispiration came from a very similar [project](https://github.com/rmrk-team/r
 
 This is a monorepo, so do `yarn install` from the root of this repo.
 
-###Scripts
+### Scripts
 
 Under `/projects/scripts` you can find scripts for deploying contracts, building NFT parts catalog and building a single Chunky NFT.
 
@@ -30,7 +30,7 @@ Building parts catalog
 Adding base parts
 ```
 
-###UI
+### UI
 Under `/projects/ui` you can find sinple Vue app to display the NFT previously built
 
 ![Chunky](chunky.png)
