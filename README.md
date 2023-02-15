@@ -31,7 +31,7 @@ Adding base parts
 ```
 
 ### UI
-Under `/projects/ui` you can find sinple Vue app to display the NFT previously built
+Under `/projects/ui` you can find simple Vue app to display the NFT previously built
 
 ![Chunky](chunky.png)
 
