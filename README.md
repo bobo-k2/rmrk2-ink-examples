@@ -35,6 +35,8 @@ Under `/projects/ui` you can find simple Vue app to display the NFT previously b
 
 ![Chunky](chunky.png)
 
+Update contract addresses in `useNft.ts` with the ones got from the script output.
+
 Navigate to the folder above and execute
 `yarn dev`
 
