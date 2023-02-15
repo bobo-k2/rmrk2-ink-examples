@@ -3,11 +3,14 @@
 //  2. find composable asset
 //  3. find asset details (equipment)
 
+// TODO requires heavy refactoring.
+
 import { ALICE_URI } from './consts';
 import { getContract, getGasLimit, getSigner } from './common_api';
 import { IBasePart } from './create_catalog';
 import { u32, u64 } from '@polkadot/types-codec';
 import axios from 'axios';
+import { sanitizeIpfsUrl } from './common';
 
 interface EquippableData {
   equippableGroupId: string;
@@ -18,14 +21,15 @@ interface EquippableData {
 interface Equipment {
   assetId: u32;
   childAssetId: u32;
-  childNft: [string, u64]
+  childNft: [string, u64];
 }
 
-export const readNft = async () => {
+export const readNft = async (
+  mainContractAddress: string,
+  partsContractAddress: string
+): Promise<IBasePart[]> => {
   // TODO provide contract address as param.
-  const contract = await getContract(
-    '5F4Aoy2nfGeRLZXF7mm4gk7ZhymXy4EaMRBKzjkNthpUJ8nk'
-  );
+  const contract = await getContract(mainContractAddress);
   const signer = getSigner(ALICE_URI);
   const tokenId = { u64: 1 };
 
@@ -65,9 +69,7 @@ export const readNft = async () => {
       if (isComposable) {
         // Parts contract address should come from the above call (getAssetAndEquippableData).
         // Raised an issue https://github.com/rmrk-team/rmrk-ink/issues/46
-        const partsContract = await getContract(
-          '5FtKQKUiFD9oy8mLqeEnKVQmhThwNachxmZquCQRJHZA8tgQ'
-        );
+        const partsContract = await getContract(partsContractAddress);
 
         const parts = await Promise.all(
           partIds.map(async (id) => {
@@ -84,24 +86,32 @@ export const readNft = async () => {
             return { id, ...part, metadataUri: hex2ascii(part.metadataUri) };
           })
         );
-        
-        const sortedParts = parts.sort((x, y) => x.z - y.z);
-        const equippableParts = sortedParts.filter((x) => x.partType === 'Slot');
-        
+
+        const sortedParts = parts
+          .map((x) => {
+            x.metadataUri = x.metadataUri ? sanitizeIpfsUrl(x.metadataUri) : '';
+            return x;
+          })
+          .sort((x, y) => x.z - y.z);
+        const equippableParts = sortedParts.filter(
+          (x) => x.partType === 'Slot'
+        );
+
         // get equipment
         if (equippableParts.length > 0) {
           // determine base Uri
           // get collection id
-          const { output: collectionId } = await partsContract.query['psp34::collectionId'](
-            signer.address,
-            {
-              gasLimit: getGasLimit(contract.api),
-              storageDepositLimit: null,
-            },
-          );
+          const { output: collectionId } = await partsContract.query[
+            'psp34::collectionId'
+          ](signer.address, {
+            gasLimit: getGasLimit(contract.api),
+            storageDepositLimit: null,
+          });
 
           // get baseUri (passed as constructer atgument during the contract initialization.)
-          const { output: baseUri } = await partsContract.query['psp34Metadata::getAttribute'](
+          const { output: baseUri } = await partsContract.query[
+            'psp34Metadata::getAttribute'
+          ](
             signer.address,
             {
               gasLimit: getGasLimit(contract.api),
@@ -112,7 +122,9 @@ export const readNft = async () => {
           );
 
           for (let ePart of equippableParts) {
-            const { output: equipment } = await contract.query['equippable::getEquipment'](
+            const { output: equipment } = await contract.query[
+              'equippable::getEquipment'
+            ](
               signer.address,
               {
                 gasLimit: getGasLimit(contract.api),
@@ -124,29 +136,35 @@ export const readNft = async () => {
 
             const equipmentJson = JSON.parse(equipment.toString()).ok;
             // TODO use TypeChain or similar
-            const partTokenId = equipmentJson.childNft[1].u64;
-            const metadadtaJsonUri = `${getIpfsGatewayUrl(baseUri.toHuman().toString())}/${partTokenId}.json`;
+            if (equipmentJson && equipmentJson.childNft) {
+              const partTokenId = equipmentJson.childNft[1].u64;
+              const metadadtaJsonUri = `${sanitizeIpfsUrl(
+                baseUri.toHuman().toString()
+              )}/${partTokenId}.json`;
 
-            // fetch json throught IPFS gateway
-            const metadataJson = await axios.get(metadadtaJsonUri);
-            ePart.metadataUri = metadataJson.data.image;
+              // fetch json throught IPFS gateway
+              const metadataJson = await axios.get(metadadtaJsonUri);
+              ePart.metadataUri = sanitizeIpfsUrl(metadataJson.data.image);
+            }
           }
         }
 
         // Now we have all IPFS urls and we are ready to render parts.
         console.log(sortedParts);
-        break;
+        return sortedParts;
       }
     }
   } else {
     console.error('Can not fetch token assets.');
   }
+
+  return [];
 };
 
 const getIpfsGatewayUrl = (ipfsUrl: string) => {
   const cid = ipfsUrl.replace('ipfs://', '');
   return `https://${cid}.ipfs.nftstorage.link`;
-}
+};
 
 const hex2ascii = (hex: string): string => {
   if (!hex) {
@@ -161,4 +179,7 @@ const hex2ascii = (hex: string): string => {
   return result;
 };
 
-readNft();
+readNft(
+  '5F4Aoy2nfGeRLZXF7mm4gk7ZhymXy4EaMRBKzjkNthpUJ8nk',
+  '5FtKQKUiFD9oy8mLqeEnKVQmhThwNachxmZquCQRJHZA8tgQ'
+);

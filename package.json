@@ -10,7 +10,7 @@
     "prettier": "^2.4.1"
   },
   "scripts": {
-    "dev": "yarn workspace rmrk2-demo dev"
+    "dev": "yarn workspace rmrk2-ink-examples dev"
   },
   "workspaces": {
     "packages": [

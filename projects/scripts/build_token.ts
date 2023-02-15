@@ -283,16 +283,16 @@ export const buildToken = async (
     )
   );
 
-  console.log(
-    await executeCall(
-      chunky,
-      'equippable::equip',
-      bob,
-      tokenId,
-      assetComposedId,
-      13, // slot
-      [chunkyParts.address, tokenId_2],
-      boneRightId
-    )
-  );
+  // console.log(
+  //   await executeCall(
+  //     chunky,
+  //     'equippable::equip',
+  //     bob,
+  //     tokenId,
+  //     assetComposedId,
+  //     13, // slot
+  //     [chunkyParts.address, tokenId_2],
+  //     boneRightId
+  //   )
+  // );
 };
