@@ -4,8 +4,8 @@ import { readNft, unequipSlot } from '../../../scripts/read_token';
 
 export const useNft = (tokenId: number) => {
   const parts = ref<IBasePart[]>([]);
-  const chunkyAddress = '5G2sjSdb5g6kbJqq2QUT5bD5Ctays9FjhdqKXF1RL5CKVDA8';
-  const partsAddress = '5DcKdBRCjrmcisQ47LfjfoA3MjYKE6LbvaAuzr2EsZWVeVqs';
+  const chunkyAddress = 'bZppMNEa3XNibNuFazJy632JiM9C7aiuvMGBjcrJwHH5khY';
+  const partsAddress = 'at6Hz7SqebyffrTtmfFQp4MFqMNePLYg9PZ4SXMziFtEtYj';
 
   const fetchNftParts = async (): Promise<void> => {
     parts.value = await readNft(chunkyAddress, partsAddress, tokenId);

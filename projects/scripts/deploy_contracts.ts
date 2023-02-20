@@ -23,7 +23,7 @@ const deployRmrkContract = async (
   );
   const code = new CodePromise(api, contract, contract.source.wasm);
   const tx = code.tx['new']!(
-    { gasLimit: getGasLimit(api), storageDepositLimit: null },
+    { gasLimit: getGasLimit(api, false), storageDepositLimit: null },
     name,
     symbol,
     baseUri,
@@ -33,14 +33,14 @@ const deployRmrkContract = async (
     royaltyReceiver,
     royalty
   );
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     await tx.signAndSend(alice, (result: CodeSubmittableResult<'promise'>) => {
       if (result.isFinalized && !result.dispatchError) {
         resolve(result.contract.address.toHuman());
       } else if (result.isFinalized && result.dispatchError) {
-        resolve(undefined);
+        reject(result.dispatchError.toHuman());
       } else if (result.isError) {
-        resolve(undefined);
+        reject(result.toHuman());
       }
     });
   });

@@ -6,11 +6,12 @@ import { ISubmittableResult } from '@polkadot/types/types';
 import { rmrkAbi } from '../abi/rmrk';
 import { ApiBase } from '@polkadot/api/base';
 
-const WSS_ENDPOINT = 'ws://localhost:9944';
+// const WSS_ENDPOINT = 'ws://localhost:9944';
+const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 // The two below can be fetched from a chain by querying const system.blockWeights: FrameSystemLimitsBlockWeights.
-const PROOF_SIZE = 5_242_880;
-const REF_TIME = 500_000_000_000;
+const PROOF_SIZE = 531_072; // 5_242_880;
+const REF_TIME = 9_480_453_976; // 500_000_000_000;
 
 let api: ApiPromise;
 
@@ -35,18 +36,34 @@ export const getContract = async (
   return new ContractPromise(api, abi, address);
 };
 
-export const getGasLimit = (api: ApiPromise | ApiBase<'promise'>): WeightV2 => {
+export const getGasLimit = (
+  api: ApiPromise | ApiBase<'promise'>,
+  max = true
+): WeightV2 => {
   return api.registry.createType('WeightV2', {
-    REF_TIME,
-    PROOF_SIZE,
+    refTime: max ? 500_000_000_000 : REF_TIME,
+    proofSize: max ? 5_242_880 : PROOF_SIZE,
+  }) as WeightV2;
+};
+
+export const doubleGasLimit = (
+  api: ApiPromise | ApiBase<'promise'>,
+  weight: WeightV2
+): WeightV2 => {
+  return api.registry.createType('WeightV2', {
+    refTime: weight.refTime.toBn().muln(2),
+    proofSize: weight.proofSize.toBn().muln(2),
   }) as WeightV2;
 };
 
 export const getSigner = (uri: string): KeyringPair => {
   const keyring = new Keyring({ type: 'sr25519' });
-  const alice = keyring.addFromUri(uri);
 
-  return alice;
+  if (uri.startsWith('//')) {
+    return keyring.addFromUri(uri);
+  } else {
+    return keyring.addFromMnemonic(uri);
+  }
 };
 
 export const executeCallWithValue = async (
@@ -56,24 +73,28 @@ export const executeCallWithValue = async (
   value = null,
   ...params: unknown[]
 ): Promise<boolean> => {
-
   // Try run
   const txResult = await contract.query[call](
     signer.address,
     {
       gasLimit: getGasLimit(contract.api),
       storageDepositLimit: null,
-      value
+      value,
     },
     ...params
   );
-  console.log(`Call: ${call}, output: ${JSON.stringify(txResult.output.toHuman())}`);
-  console.log(`Call: ${call}, result: ${JSON.stringify(txResult.result.toHuman())}`);
+  console.log(
+    `Call: ${call}, output: ${JSON.stringify(txResult.output?.toHuman())}`
+  );
+  console.log(
+    `Call: ${call}, result: ${JSON.stringify(txResult.result.toHuman())}`
+  );
 
   return new Promise((resolve) => {
     contract.tx[call](
       {
-        gasLimit: getGasLimit(contract.api),
+        // gasLimit: getGasLimit(contract.api),
+        gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
         storageDepositLimit: null,
         value,
       },
@@ -117,4 +138,4 @@ const getErrorMessage = (dispatchError: DispatchError): string => {
   }
 
   return message;
-}
+};
