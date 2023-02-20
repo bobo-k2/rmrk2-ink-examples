@@ -1,8 +1,9 @@
 **NOTE: Still under development**
+**Doesn't work with Node v18. Use v16 instead.**
 
 This repository showcases a collection of examples on how to use RMRK2 with Ink! [contract](https://github.com/rmrk-team/rmrk-ink) implementation.
 
-The ispiration came from a very similar [project](https://github.com/rmrk-team/rmrk2-examples) targeting RMRK2 pallet.
+The inspiration came from a very similar [project](https://github.com/rmrk-team/rmrk2-examples) targeting RMRK2 pallet.
 
 This is a monorepo, so do `yarn install` from the root of this repo.
 
@@ -10,7 +11,7 @@ This is a monorepo, so do `yarn install` from the root of this repo.
 
 Under `/projects/scripts` you can find scripts for deploying contracts, building NFT parts catalog and building a single Chunky NFT.
 
-Before runing scripts install and run the latest [Swanky Node](https://github.com/AstarNetwork/swanky-node) by running the command
+Before running scripts install and run the latest [Swanky Node](https://github.com/AstarNetwork/swanky-node) by running the command
 
 `./target/release/swanky-node --dev --tmp -lruntime=trace -lruntime::contracts=debug -lerror`
 
@@ -18,7 +19,7 @@ After Swanky Node is up and running navigate to the folder above and execute the
 
 `yarn run-all`
  
- which will perform all the steps above. The scripts deploys two contracts, one with chunky NFT and another with Chunky parts and catalog.
+ which will perform all needed to mint single NFT and his parts. The scripts deploys two contracts, one with chunky NFT and another with Chunky parts and catalog.
 
  In the script output look for contract addresses they will be needed later.
 

@@ -1,4 +1,4 @@
-// This script will read all metadada required to display token on UI in the following order
+// This script will read all metadata required to display token on UI in the following order
 //  1. getAcceptedAssets
 //  2. find composable asset
 //  3. find asset details (equipment)
@@ -10,7 +10,6 @@ import { ALICE_URI, BOB_URI } from './consts';
 import { executeCall, getContract, getGasLimit, getSigner } from './common_api';
 import { IBasePart } from './create_catalog';
 import { u32, u64 } from '@polkadot/types-codec';
-import axios from 'axios';
 import { sanitizeIpfsUrl } from './common';
 
 interface EquippableData {
@@ -50,7 +49,7 @@ export const readNft = async (
   );
 
   if (result.isOk) {
-    // TODO there should be a better way. Maybe typechain
+    // TODO there should be a better way. Maybe TypeChain
     const assetIds = JSON.parse(output.toString()).ok as number[];
     for (let assetId of assetIds) {
       const { result, output } = await contract.query[
@@ -156,7 +155,6 @@ export const readNft = async (
                 },
                 equipmentJson.childAssetId
               );
-              console.log(ePart.id, assetUri.toHuman());
 
               // fetch json through IPFS gateway
               // const metadataJson = await axios.get(metadataJsonUri);

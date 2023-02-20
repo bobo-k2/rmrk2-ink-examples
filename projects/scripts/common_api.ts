@@ -6,11 +6,9 @@ import { ISubmittableResult } from '@polkadot/types/types';
 import { rmrkAbi } from '../abi/rmrk';
 import { ApiBase } from '@polkadot/api/base';
 
-// const WSS_ENDPOINT = "wss://shibuya-rpc.dwellir.com";
-// const CONTRACT_ADDRESS = "Whc3ikvddB9u4cgHHYA3eZWSiPuciWSxgiY4xZQjvbv9SeT";
-
 const WSS_ENDPOINT = 'ws://localhost:9944';
-// The two below can be fetched from a chain by queryng const system.blockWeights: FrameSystemLimitsBlockWeights.
+
+// The two below can be fetched from a chain by querying const system.blockWeights: FrameSystemLimitsBlockWeights.
 const PROOF_SIZE = 5_242_880;
 const REF_TIME = 500_000_000_000;
 

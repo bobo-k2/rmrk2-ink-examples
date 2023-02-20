@@ -29,7 +29,7 @@ export const containsCID = (ipfsUrl?: string | null) => {
   };
 };
 
-const convertToDesiredGateway = (ipfsUrl?: string | null, gatewayPrefixovider?: string) => {
+const convertToDesiredGateway = (ipfsUrl?: string | null, gatewayPrefixProvider?: string) => {
   const results = containsCID(ipfsUrl);
   if (!ipfsUrl || results.containsCid !== true) {
     throw new Error('url does not contain CID');
@@ -38,21 +38,21 @@ const convertToDesiredGateway = (ipfsUrl?: string | null, gatewayPrefixovider?: 
   const splitUrl = ipfsUrl.split(results.cid);
   //case 1 - the ipfs://cid path
   if (ipfsUrl.includes(`ipfs://${results.cid}`)) {
-    return `${gatewayPrefixovider}/ipfs/${results.cid}${splitUrl[1]}`;
+    return `${gatewayPrefixProvider}/ipfs/${results.cid}${splitUrl[1]}`;
   }
 
   //case 2 - the /ipfs/cid path (this should cover ipfs://ipfs/cid as well
   if (ipfsUrl.includes(`/ipfs/${results.cid}`)) {
-    return `${gatewayPrefixovider}/ipfs/${results.cid}${splitUrl[1]}`;
+    return `${gatewayPrefixProvider}/ipfs/${results.cid}${splitUrl[1]}`;
   }
 
   //case 3 - the /ipns/cid path
   if (ipfsUrl.includes(`/ipns/${results.cid}`)) {
-    return `${gatewayPrefixovider}/ipns/${results.cid}${splitUrl[1]}`;
+    return `${gatewayPrefixProvider}/ipns/${results.cid}${splitUrl[1]}`;
   }
 
   if (!ipfsUrl.includes('ipfs') && ipfsUrl === results.cid) {
-    return `${gatewayPrefixovider}/ipfs/${results.cid}${splitUrl[1]}`;
+    return `${gatewayPrefixProvider}/ipfs/${results.cid}${splitUrl[1]}`;
   }
 
   //this is the fallback if no supported patterns are provided
