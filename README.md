@@ -10,7 +10,9 @@ This is a monorepo, so do `yarn install` from the root of this repo.
 
 Under `/projects/scripts` you can find scripts for deploying contracts, building NFT parts catalog and building a single Chunky NFT.
 
-Before runing scripts install and run the latest [Swanky Node](https://github.com/AstarNetwork/swanky-node)
+Before runing scripts install and run the latest [Swanky Node](https://github.com/AstarNetwork/swanky-node) by running the command
+
+`./target/release/swanky-node --dev --tmp -lruntime=trace -lruntime::contracts=debug -lerror`
 
 After Swanky Node is up and running navigate to the folder above and execute the command
 

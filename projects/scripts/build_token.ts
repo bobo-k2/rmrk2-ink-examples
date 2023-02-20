@@ -1,3 +1,4 @@
+import { mintTokenParts, PartIds } from './mint_token_parts';
 import {
   executeCall,
   executeCallWithValue,
@@ -7,24 +8,25 @@ import {
 import {
   ALICE_URI,
   BOB_URI,
-  CHUNKY_ADDRESSS,
+  CHUNKY_ADDRESS,
   CHUNKY_PARTS_ADDRESS,
+  PRICE_PER_MINT,
 } from './consts';
 
 /**
- * Builds muti asset equipable Chunky NFT. Based on:
+ * Builds multi asset equippable Chunky NFT. Based on:
  * https://github.com/rmrk-team/evm-sample-contracts/tree/master/contracts/MergedEquippable
  *
  */
 export const buildToken = async (
-  chunkyAddress = CHUNKY_ADDRESSS,
+  chunkyAddress = CHUNKY_ADDRESS,
   chunkyPartsAddress = CHUNKY_PARTS_ADDRESS
 ) => {
   const chunky = await getContract(chunkyAddress);
   const chunkyParts = await getContract(chunkyPartsAddress);
   const alice = getSigner(ALICE_URI);
   const bob = getSigner(BOB_URI);
-  const pricePerMint = BigInt(1_000_000_000_000_000_000);
+
 
   // *************************************** Mint chunky as Bob
   console.log('Minting Chunky as Bob');
@@ -34,22 +36,23 @@ export const buildToken = async (
       chunky,
       'minting::mint',
       bob,
-      pricePerMint,
+      PRICE_PER_MINT * BigInt(TOKENS_TO_MINT),
       bob.address,
       TOKENS_TO_MINT
     )
   );
 
   // *************************************** Mint two chunky parts as Bob
-  console.log('Minting Two Chunky Parts as Bob');
+  console.log('Minting Chunky Parts as Bob');
+  const PART_TOKENS_TO_MINT = 6;
   console.log(
     await executeCallWithValue(
       chunkyParts,
       'minting::mint',
       bob,
-      pricePerMint * BigInt(2),
+      PRICE_PER_MINT * BigInt(PART_TOKENS_TO_MINT),
       bob.address,
-      TOKENS_TO_MINT * 2
+      PART_TOKENS_TO_MINT
     )
   );
 
@@ -66,9 +69,7 @@ export const buildToken = async (
       alice,
       assetDefaultId,
       equippableGroupId,
-      [
-        'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Preview.png',
-      ],
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Preview.png',
       []
     )
   );
@@ -80,9 +81,7 @@ export const buildToken = async (
       alice,
       assetComposedId,
       equippableGroupId,
-      [
-        'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Preview.png',
-      ],
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Preview.png',
       [0, 5, 10, 12, 13]
     )
   );
@@ -138,92 +137,8 @@ export const buildToken = async (
 
   // *************************************** Add assets to parts as deployer
   console.log('Deployer adds assets to chunky parts');
-  const equippableRefIdLeftHand = 1;
-  const equippableRefIdRightHand = 2;
-  const boneLeftId = 1;
-  const boneRightId = 2;
-
-  console.log(
-    await executeCall(
-      chunkyParts,
-      'multiAsset::addAssetEntry',
-      alice,
-      boneLeftId,
-      equippableRefIdLeftHand,
-      [
-        'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_bone_left.svg',
-      ],
-      []
-    )
-  );
-
-  console.log(
-    await executeCall(
-      chunkyParts,
-      'multiAsset::addAssetEntry',
-      alice,
-      boneRightId,
-      equippableRefIdRightHand,
-      [
-        'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_bone_left.svg',
-      ],
-      []
-    )
-  );
-
-  // *************************************** Set equipable group parents
-  // Valid hand item slots are 12 and 13 (zero based)
-  console.log('Set equipable group parents');
-
-  console.log(
-    await executeCall(
-      chunkyParts,
-      'equippable::setValidParentForEquippableGroup',
-      bob,
-      equippableRefIdLeftHand,
-      chunky.address,
-      12 // slot
-    )
-  );
-
-  console.log(
-    await executeCall(
-      chunkyParts,
-      'equippable::setValidParentForEquippableGroup',
-      bob,
-      equippableRefIdRightHand,
-      chunky.address,
-      13 // slot
-    )
-  );
-
-  // *************************************** add asset 1 (bone) to left hand and asset 2 (bone) to right hand
-  console.log(
-    'Adding asset 1 (bone) to left hand and asset 2 (bone) to right hand'
-  );
   const tokenId_2 = { u64: 2 };
-
-  console.log(
-    await executeCall(
-      chunkyParts,
-      'multiAsset::addAssetToToken',
-      bob,
-      tokenId,
-      boneLeftId,
-      null
-    )
-  );
-
-  console.log(
-    await executeCall(
-      chunkyParts,
-      'multiAsset::addAssetToToken',
-      bob,
-      tokenId_2,
-      boneRightId,
-      null
-    )
-  );
+  await mintTokenParts(chunkyPartsAddress, chunkyAddress);
 
   // *************************************** Bob approves chunky contract chunky parts (for bones for nesting on Chunky)
   console.log('Approving chunky parts');
@@ -279,20 +194,20 @@ export const buildToken = async (
       assetComposedId,
       12, // slot
       [chunkyParts.address, tokenId],
-      boneLeftId
+      PartIds.BoneLeft
     )
   );
 
-  // console.log(
-  //   await executeCall(
-  //     chunky,
-  //     'equippable::equip',
-  //     bob,
-  //     tokenId,
-  //     assetComposedId,
-  //     13, // slot
-  //     [chunkyParts.address, tokenId_2],
-  //     boneRightId
-  //   )
-  // );
+  console.log(
+    await executeCall(
+      chunky,
+      'equippable::equip',
+      bob,
+      tokenId,
+      assetComposedId,
+      13, // slot
+      [chunkyParts.address, tokenId_2],
+      PartIds.FlagRight
+    )
+  );
 };

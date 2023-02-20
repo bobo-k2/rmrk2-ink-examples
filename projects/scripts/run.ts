@@ -8,6 +8,7 @@ import {
 import { getSigner } from './common_api';
 import { ALICE_URI } from './consts';
 import { buildToken } from './build_token';
+import { mintTokenParts } from './mint_token_parts';
 
 const runAll = async (signer: KeyringPair): Promise<void> => {
   console.log('Deploying contracts');
@@ -19,6 +20,15 @@ const runAll = async (signer: KeyringPair): Promise<void> => {
 
   console.log('Building token');
   await buildToken(chunkyAddress, partsAddress);
+};
+
+const runDeployParts = async (signer: KeyringPair): Promise<void> => {
+  console.log('Deploying and minting parts contract');
+  const partsAddress = await deployChunkyPartsContract(signer);
+  const chunkyAddress = await deployChunkyContract(signer);
+
+  console.log('Building token parts');
+  await mintTokenParts(partsAddress, chunkyAddress);
 };
 
 const runCommand = async (): Promise<void> => {
@@ -37,6 +47,9 @@ const runCommand = async (): Promise<void> => {
     case 'token':
       // Since no contracts addresses are provided method will pick up address from CHUNKY_ADDRESS, CHUNKY_PARTS_ADDRESS
       await buildToken();
+      break;
+    case 'token-parts':
+      await runDeployParts(alice);
       break;
     case 'all':
     default:

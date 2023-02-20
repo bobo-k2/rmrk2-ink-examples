@@ -8,6 +8,7 @@ const ASSETS_CID = 'QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL';
 export type PartType = 'None' | 'Slot' | 'Fixed';
 
 export interface IBasePart {
+  id?: string | number;
   partType: PartType;
   equippable?: string[] | '*';
   metadataUri?: string;

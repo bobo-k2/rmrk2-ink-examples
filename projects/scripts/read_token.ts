@@ -5,8 +5,9 @@
 
 // TODO requires heavy refactoring.
 
-import { ALICE_URI } from './consts';
-import { getContract, getGasLimit, getSigner } from './common_api';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { ALICE_URI, BOB_URI } from './consts';
+import { executeCall, getContract, getGasLimit, getSigner } from './common_api';
 import { IBasePart } from './create_catalog';
 import { u32, u64 } from '@polkadot/types-codec';
 import axios from 'axios';
@@ -26,12 +27,15 @@ interface Equipment {
 
 export const readNft = async (
   mainContractAddress: string,
-  partsContractAddress: string
+  partsContractAddress: string,
+  id: number
 ): Promise<IBasePart[]> => {
   // TODO provide contract address as param.
+  await cryptoWaitReady();
   const contract = await getContract(mainContractAddress);
+  const partsContract = await getContract(partsContractAddress);
   const signer = getSigner(ALICE_URI);
-  const tokenId = { u64: 1 };
+  const tokenId = { u64: id };
 
   // 1. Get assets
   const { result, output } = await contract.query[
@@ -61,7 +65,7 @@ export const readNft = async (
         assetId
       );
 
-      const { equippableGroupId, assetUri, partIds } = <EquippableData>(
+      const { partIds } = <EquippableData>(
         JSON.parse(output.toString()).ok
       );
       const isComposable = partIds && partIds.length > 0;
@@ -108,7 +112,7 @@ export const readNft = async (
             storageDepositLimit: null,
           });
 
-          // get baseUri (passed as constructer atgument during the contract initialization.)
+          // get baseUri (passed as constructor argument during the contract initialization.)
           const { output: baseUri } = await partsContract.query[
             'psp34Metadata::getAttribute'
           ](
@@ -138,19 +142,32 @@ export const readNft = async (
             // TODO use TypeChain or similar
             if (equipmentJson && equipmentJson.childNft) {
               const partTokenId = equipmentJson.childNft[1].u64;
-              const metadadtaJsonUri = `${sanitizeIpfsUrl(
+              const metadataJsonUri = `${sanitizeIpfsUrl(
                 baseUri.toHuman().toString()
               )}/${partTokenId}.json`;
 
-              // fetch json throught IPFS gateway
-              const metadataJson = await axios.get(metadadtaJsonUri);
-              ePart.metadataUri = sanitizeIpfsUrl(metadataJson.data.image);
+              const { output: assetUri } = await partsContract.query[
+                'multiAsset::getAssetUri'
+              ](
+                signer.address,
+                {
+                  gasLimit: getGasLimit(contract.api),
+                  storageDepositLimit: null,
+                },
+                equipmentJson.childAssetId
+              );
+              console.log(ePart.id, assetUri.toHuman());
+
+              // fetch json through IPFS gateway
+              // const metadataJson = await axios.get(metadataJsonUri);
+              // ePart.metadataUri = sanitizeIpfsUrl(metadataJson.data.image);
+              ePart.metadataUri = sanitizeIpfsUrl(assetUri.toHuman().toString());
             }
           }
         }
 
         // Now we have all IPFS urls and we are ready to render parts.
-        console.log(sortedParts);
+        // console.log(sortedParts);
         return sortedParts;
       }
     }
@@ -160,6 +177,17 @@ export const readNft = async (
 
   return [];
 };
+
+export const unequipSlot =async (contractAddress: string, tokenId: number, slotId: string): Promise<boolean> => {
+  const contract = await getContract(contractAddress);
+  return await executeCall(
+        contract,
+        'equippable::unequip',
+        getSigner(BOB_URI), // Should be passed as parameter.
+        { u64: tokenId },
+        slotId
+      );
+}
 
 const getIpfsGatewayUrl = (ipfsUrl: string) => {
   const cid = ipfsUrl.replace('ipfs://', '');
@@ -180,6 +208,7 @@ const hex2ascii = (hex: string): string => {
 };
 
 readNft(
-  '5F4Aoy2nfGeRLZXF7mm4gk7ZhymXy4EaMRBKzjkNthpUJ8nk',
-  '5FtKQKUiFD9oy8mLqeEnKVQmhThwNachxmZquCQRJHZA8tgQ'
+  '5FJgDjwiA2mQCx5kQAgSCiDfrB5mDRGXjUi1D8kbucaWb7jf',
+  '5EgKoUjoqK84PXq3Vn5jEMnWQUKQvQ7KZn3y71s2s1s3iErH',
+  1
 );

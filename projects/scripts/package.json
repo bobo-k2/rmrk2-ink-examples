@@ -7,6 +7,7 @@
     "deploy-contracts": "ts-node run.ts deploy",
     "create-catalog": "ts-node run.ts catalog",
     "build-token": "ts-node run.ts token",
+    "build-token-parts": "ts-node run.ts token-parts",
     "run-all": "ts-node run.ts all",
     "read-token": "ts-node read_token.ts",
     "test": "echo \"Error: no test specified\" && exit 1"

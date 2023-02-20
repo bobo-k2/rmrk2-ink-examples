@@ -1,13 +1,16 @@
 <script lang="ts">
+import { _1000n } from "@polkadot/util";
 import { defineComponent } from "vue";
 import { useNft } from "../hooks/useNft";
 
 export default defineComponent({
   setup() {
-    const { parts } = useNft();
+    const tokenId = 1;
+    const { parts, unequip } = useNft(tokenId);
 
     return {
       parts,
+      unequip,
     };
   },
 });
@@ -32,6 +35,14 @@ export default defineComponent({
       >
         <div>
           <img :src="part.metadataUri" width="200" />
+          <button
+            v-if="
+              part.metadataUri && part.equippable && part.equippable.length > 0
+            "
+            @click="unequip(part.id)"
+          >
+            Unequip
+          </button>
         </div>
         <div>
           <pre>{{ part }}</pre>
@@ -69,5 +80,10 @@ export default defineComponent({
   top: 0px;
   width: 400px;
   z-index: -1;
+}
+
+button {
+  margin: 6px;
+  padding: 10px;
 }
 </style>
