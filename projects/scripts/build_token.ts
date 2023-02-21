@@ -34,25 +34,11 @@ export const buildToken = async (
   console.log(
     await executeCallWithValue(
       chunky,
-      'minting::mint',
+      'mintingLazy::mintMany',
       bob,
       PRICE_PER_MINT * BigInt(TOKENS_TO_MINT),
-      bob.address,
+      // bob.address,
       TOKENS_TO_MINT
-    )
-  );
-
-  // *************************************** Mint two chunky parts as Bob
-  console.log('Minting Chunky Parts as Bob');
-  const PART_TOKENS_TO_MINT = 6;
-  console.log(
-    await executeCallWithValue(
-      chunkyParts,
-      'minting::mint',
-      bob,
-      PRICE_PER_MINT * BigInt(PART_TOKENS_TO_MINT),
-      bob.address,
-      PART_TOKENS_TO_MINT
     )
   );
 

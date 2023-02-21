@@ -6,8 +6,7 @@ import { ISubmittableResult } from '@polkadot/types/types';
 import { rmrkAbi } from '../abi/rmrk';
 import { ApiBase } from '@polkadot/api/base';
 
-// const WSS_ENDPOINT = 'ws://localhost:9944';
-const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
+const WSS_ENDPOINT = 'ws://localhost:9944';
 
 // The two below can be fetched from a chain by querying const system.blockWeights: FrameSystemLimitsBlockWeights.
 const PROOF_SIZE = 531_072; // 5_242_880;
@@ -83,17 +82,23 @@ export const executeCallWithValue = async (
     },
     ...params
   );
-  console.log(
-    `Call: ${call}, output: ${JSON.stringify(txResult.output?.toHuman())}`
-  );
+  
   console.log(
     `Call: ${call}, result: ${JSON.stringify(txResult.result.toHuman())}`
+  );
+
+  if (txResult.result.isErr || txResult.result.toString().includes('Revert')) {
+    throw txResult.result.value;
+  }
+
+  console.log(
+    `Call: ${call}, output: ${JSON.stringify(txResult.output?.toHuman())}`
   );
 
   return new Promise((resolve) => {
     contract.tx[call](
       {
-        // gasLimit: getGasLimit(contract.api),
+        //gasLimit: getGasLimit(contract.api, true),
         gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
         storageDepositLimit: null,
         value,

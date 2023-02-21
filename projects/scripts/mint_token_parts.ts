@@ -34,10 +34,10 @@ export const mintTokenParts = async (
   console.log(
     await executeCallWithValue(
       chunkyParts,
-      'minting::mint',
+      'mintingLazy::mintMany',
       bob,
       PRICE_PER_MINT * BigInt(PART_TOKENS_TO_MINT),
-      bob.address,
+      // bob.address,
       PART_TOKENS_TO_MINT
     )
   );
@@ -118,7 +118,7 @@ export const mintTokenParts = async (
   console.log('Adding assets to tokens');
   const tokenId1 = { u64: 1 };
   const tokenId2 = { u64: 2 };
-  
+
   // Add bone assets to token 1
   console.log(
     await executeCall(

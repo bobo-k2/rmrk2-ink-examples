@@ -11,7 +11,7 @@ export interface IBasePart {
   id?: string | number;
   partType: PartType;
   equippable?: string[] | '*';
-  metadataUri?: string;
+  partUri?: string;
   isEquippableByAll?: boolean;
   z?: number;
 }
@@ -23,62 +23,62 @@ interface Id extends Codec {
 const fixedParts: IBasePart[] = [
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v1/Chunky_body_v1.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v1/Chunky_body_v1.svg`,
     z: 0,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v2/Chunky_body_v2.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v2/Chunky_body_v2.svg`,
     z: 0,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v3/Chunky_body_v3.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v3/Chunky_body_v3.svg`,
     z: 0,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v4/Chunky_body_v4.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v4/Chunky_body_v4.svg`,
     z: 0,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v1/Chunky_head_v1.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v1/Chunky_head_v1.svg`,
     z: 4,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v2/Chunky_head_v2.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v2/Chunky_head_v2.svg`,
     z: 4,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v3/Chunky_head_v3.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v3/Chunky_head_v3.svg`,
     z: 4,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v4/Chunky_head_v4.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v4/Chunky_head_v4.svg`,
     z: 4,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v1/Chunky_hand_v1.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v1/Chunky_hand_v1.svg`,
     z: 3,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v2/Chunky_hand_v2.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v2/Chunky_hand_v2.svg`,
     z: 3,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v3/Chunky_hand_v3.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v3/Chunky_hand_v3.svg`,
     z: 3,
   },
   {
     partType: 'Fixed',
-    metadataUri: `ipfs://${ASSETS_CID}/v4/Chunky_hand_v4.svg`,
+    partUri: `ipfs://${ASSETS_CID}/v4/Chunky_hand_v4.svg`,
     z: 3,
   },
 ];

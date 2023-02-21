@@ -86,7 +86,7 @@ export const readNft = async (
             );
 
             const part = <IBasePart>JSON.parse(output.toString());
-            return { id, ...part, metadataUri: hex2ascii(part.metadataUri) };
+            return { id, ...part, metadataUri: hex2ascii(part.partUri) };
           })
         );
 
@@ -137,7 +137,7 @@ export const readNft = async (
               ePart.id
             );
 
-            const equipmentJson = JSON.parse(equipment.toString()).ok;
+            const equipmentJson = JSON.parse(equipment.toString());
             // TODO use TypeChain or similar
             if (equipmentJson && equipmentJson.childNft) {
               const partTokenId = equipmentJson.childNft[1].u64;
@@ -176,7 +176,7 @@ export const readNft = async (
   return [];
 };
 
-export const unequipSlot =async (contractAddress: string, tokenId: number, slotId: string): Promise<boolean> => {
+export const unequipSlot = async (contractAddress: string, tokenId: number, slotId: string): Promise<boolean> => {
   const contract = await getContract(contractAddress);
   return await executeCall(
         contract,
@@ -185,7 +185,11 @@ export const unequipSlot =async (contractAddress: string, tokenId: number, slotI
         { u64: tokenId },
         slotId
       );
-}
+};
+
+export const getChildren = async (contractAddress: string, tokenId: number): Promise<void> => {
+
+};
 
 const getIpfsGatewayUrl = (ipfsUrl: string) => {
   const cid = ipfsUrl.replace('ipfs://', '');
@@ -206,7 +210,7 @@ const hex2ascii = (hex: string): string => {
 };
 
 readNft(
-  '5FJgDjwiA2mQCx5kQAgSCiDfrB5mDRGXjUi1D8kbucaWb7jf',
-  '5EgKoUjoqK84PXq3Vn5jEMnWQUKQvQ7KZn3y71s2s1s3iErH',
+  '5EmT1CzebnTgNPWoWxL9GagkfdcvmdUkwD7xSwgsGvNn8Mo8',
+  '5Gj2ah1oBcyvnpnC2jXAKrDoGDNTMLTxExakJ7Dvt7mwzsDK',
   1
 );
