@@ -34,13 +34,13 @@ Adding base parts
 ```
 
 ### UI
-Under `/projects/ui` you can find simple Vue app to display the NFT previously built
+Under `/projects/ui2` you can find simple Vue app to display, equip, unequip the NFT previously built
 
 ![Chunky](chunky.png)
 
 Update contract addresses in `useNft.ts` with the ones got from the script output.
 
 Navigate to the folder above and execute
-`yarn dev`
+`yarn serve`
 
-Open local page (most likely `http://127.0.0.1:5173/`) in web browser to display the NFT.
+Open local page (most likely `http://localhost:8080/`) in web browser to display the NFT.
