@@ -5,6 +5,7 @@ import { WeightV2, DispatchError } from '@polkadot/types/interfaces';
 import { ISubmittableResult } from '@polkadot/types/types';
 import { rmrkAbi } from '../abi/rmrk';
 import { ApiBase } from '@polkadot/api/base';
+import Contract from './typed_contracts/contracts/rmrk_contract';
 
 const WSS_ENDPOINT = 'ws://localhost:9944';
 
@@ -34,6 +35,11 @@ export const getContract = async (
 
   return new ContractPromise(api, abi, address);
 };
+
+export const getTypedContract = async (address: string, signer: KeyringPair): Promise<Contract> => {
+  const api = await getApi();
+  return new Contract(address, signer, api);
+}
 
 export const getGasLimit = (
   api: ApiPromise | ApiBase<'promise'>,
@@ -78,7 +84,7 @@ export const executeCallWithValue = async (
     {
       gasLimit: getGasLimit(contract.api),
       storageDepositLimit: null,
-      value,
+      value: value ?? 0,
     },
     ...params
   );
@@ -101,7 +107,7 @@ export const executeCallWithValue = async (
         //gasLimit: getGasLimit(contract.api, true),
         gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
         storageDepositLimit: null,
-        value,
+        value: value ?? 0,
       },
       ...params
     ).signAndSend(signer, (result: ISubmittableResult) => {

@@ -7,10 +7,23 @@
 
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { ALICE_URI, BOB_URI } from './consts';
-import { executeCall, getContract, getGasLimit, getSigner } from './common_api';
+import {
+  executeCall,
+  getApi,
+  getContract,
+  getGasLimit,
+  getSigner,
+  getTypedContract,
+} from './common_api';
 import { IBasePart } from './create_catalog';
 import { u32, u64 } from '@polkadot/types-codec';
 import { sanitizeIpfsUrl } from './common';
+import { IdBuilder } from './typed_contracts/types-arguments/rmrk_contract';
+import {
+  AccountId,
+  Asset,
+  Id,
+} from './typed_contracts/types-returns/rmrk_contract';
 
 interface EquippableData {
   equippableGroupId: string;
@@ -23,6 +36,8 @@ interface Equipment {
   childAssetId: u32;
   childNft: [string, u64];
 }
+
+export type ExtendedAsset = Asset & { id: number; gatewayUrl: string };
 
 export const readNft = async (
   mainContractAddress: string,
@@ -50,7 +65,7 @@ export const readNft = async (
 
   if (result.isOk) {
     // TODO there should be a better way. Maybe TypeChain
-    const assetIds = JSON.parse(output.toString()).ok as number[];
+    const assetIds = JSON.parse(output?.toString() ?? '').ok as number[];
     for (let assetId of assetIds) {
       const { result, output } = await contract.query[
         'equippable::getAssetAndEquippableData'
@@ -65,7 +80,7 @@ export const readNft = async (
       );
 
       const { partIds } = <EquippableData>(
-        JSON.parse(output.toString()).ok
+        JSON.parse(output?.toString() ?? '').ok
       );
       const isComposable = partIds && partIds.length > 0;
 
@@ -85,8 +100,8 @@ export const readNft = async (
               id
             );
 
-            const part = <IBasePart>JSON.parse(output.toString());
-            return { id, ...part, metadataUri: hex2ascii(part.partUri) };
+            const part = <IBasePart>JSON.parse(output?.toString() ?? '');
+            return { id, ...part, metadataUri: hex2ascii(part.partUri ?? '') };
           })
         );
 
@@ -95,7 +110,7 @@ export const readNft = async (
             x.metadataUri = x.metadataUri ? sanitizeIpfsUrl(x.metadataUri) : '';
             return x;
           })
-          .sort((x, y) => x.z - y.z);
+          .sort((x, y) => (x?.z ?? 0) - (y?.z ?? 0));
         const equippableParts = sortedParts.filter(
           (x) => x.partType === 'Slot'
         );
@@ -120,7 +135,7 @@ export const readNft = async (
               gasLimit: getGasLimit(contract.api),
               storageDepositLimit: null,
             },
-            collectionId.toHuman(),
+            collectionId?.toHuman(),
             'baseUri'
           );
 
@@ -137,12 +152,16 @@ export const readNft = async (
               ePart.id
             );
 
-            const equipmentJson = JSON.parse(equipment.toString());
+            if (equipment?.isEmpty) {
+              continue;
+            }
+
+            const equipmentJson = JSON.parse(equipment?.toString() ?? '');
             // TODO use TypeChain or similar
             if (equipmentJson && equipmentJson.childNft) {
               const partTokenId = equipmentJson.childNft[1].u64;
               const metadataJsonUri = `${sanitizeIpfsUrl(
-                baseUri.toHuman().toString()
+                baseUri?.toHuman()?.toString()
               )}/${partTokenId}.json`;
 
               const { output: assetUri } = await partsContract.query[
@@ -159,7 +178,9 @@ export const readNft = async (
               // fetch json through IPFS gateway
               // const metadataJson = await axios.get(metadataJsonUri);
               // ePart.metadataUri = sanitizeIpfsUrl(metadataJson.data.image);
-              ePart.metadataUri = sanitizeIpfsUrl(assetUri.toHuman().toString());
+              ePart.metadataUri = sanitizeIpfsUrl(
+                assetUri?.toHuman()?.toString()
+              );
             }
           }
         }
@@ -176,19 +197,84 @@ export const readNft = async (
   return [];
 };
 
-export const unequipSlot = async (contractAddress: string, tokenId: number, slotId: string): Promise<boolean> => {
+export const unequipSlot = async (
+  contractAddress: string,
+  tokenId: number,
+  slotId: string
+): Promise<boolean> => {
   const contract = await getContract(contractAddress);
   return await executeCall(
-        contract,
-        'equippable::unequip',
-        getSigner(BOB_URI), // Should be passed as parameter.
-        { u64: tokenId },
-        slotId
-      );
+    contract,
+    'equippable::unequip',
+    getSigner(BOB_URI), // Should be passed as parameter.
+    { u64: tokenId },
+    slotId
+  );
 };
 
-export const getChildren = async (contractAddress: string, tokenId: number): Promise<void> => {
+export const getEquippableChildren = async (
+  contractAddress: string,
+  tokenId: number
+): Promise<Map<Id, (ExtendedAsset | null)[]>> => {
+  await cryptoWaitReady();
+  const signer = getSigner(ALICE_URI);
+  const contract = await getTypedContract(contractAddress, signer);
+  const result = new Map<Id, (ExtendedAsset | null)[]>();
 
+  const children = await contract.query.getAcceptedChildren(
+    IdBuilder.U64(tokenId)
+  );
+
+  if (children.value) {
+    for (let child of children.value) {
+      const partsContract = await getTypedContract(child[0].toString(), signer);
+      const childTokenId = IdBuilder.U64(child[1].u64 ?? 0);
+      const assetIds = await partsContract.query.getAcceptedTokenAssets(
+        childTokenId
+      );
+
+      if (assetIds.value.ok) {
+        const assetsToAdd: ExtendedAsset[] = [];
+        for (let id of assetIds.value.unwrap()) {
+          const asset = await partsContract.query['multiAsset::getAsset'](id);
+          if (asset.value) {
+            assetsToAdd.push({
+              ...asset.value,
+              id,
+              gatewayUrl: sanitizeIpfsUrl(
+                hex2ascii(asset.value.assetUri.toString())
+              ),
+            } as ExtendedAsset);
+          }
+        }
+
+        result.set(child[1], assetsToAdd);
+      }
+    }
+  }
+
+  return result;
+};
+
+export const equipSlot = async (
+  parentContractAddress: string,
+  tokenId: Id,
+  assetId: string,
+  slot: number,
+  childContractAddress: string,
+  childTokenId: Id,
+  childAssetId: string
+): Promise<void> => {
+  const signer = getSigner(BOB_URI);
+  const contract = await getTypedContract(parentContractAddress, signer);
+  
+  await contract.tx.equip(
+    IdBuilder.U64(tokenId.u64 ?? 0),
+    assetId,
+    slot,
+    [childContractAddress, IdBuilder.U64(childTokenId.u64 ?? 0)],
+    childAssetId
+  );
 };
 
 const getIpfsGatewayUrl = (ipfsUrl: string) => {
@@ -196,7 +282,7 @@ const getIpfsGatewayUrl = (ipfsUrl: string) => {
   return `https://${cid}.ipfs.nftstorage.link`;
 };
 
-const hex2ascii = (hex: string): string => {
+export const hex2ascii = (hex: string): string => {
   if (!hex) {
     return '';
   }
@@ -209,8 +295,10 @@ const hex2ascii = (hex: string): string => {
   return result;
 };
 
-readNft(
-  '5EmT1CzebnTgNPWoWxL9GagkfdcvmdUkwD7xSwgsGvNn8Mo8',
-  '5Gj2ah1oBcyvnpnC2jXAKrDoGDNTMLTxExakJ7Dvt7mwzsDK',
-  1
-);
+// readNft(
+//   '5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY',
+//   '5EaQghKYQks1Ve3CNzJRLXYGPVwt2NsM2i3RkQ9kvNKCvLx8',
+//   1
+// );
+
+// getEquippableChildren('5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY', 1);

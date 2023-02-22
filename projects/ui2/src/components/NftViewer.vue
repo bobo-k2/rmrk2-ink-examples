@@ -1,21 +1,29 @@
 <script lang="ts">
 import { _1000n } from "@polkadot/util";
 import { defineComponent } from "vue";
+import { IBasePart } from "../../../scripts/create_catalog";
 import { useNft } from "../hooks/useNft";
-import Equipment from "./Equipment.vue";
+import AcceptedEquipment from "./AcceptedEquipment.vue";
 
 export default defineComponent({
   components: {
-    Equipment,
+    AcceptedEquipment,
   },
   setup() {
     const tokenId = 1;
-    const { parts, unequip } = useNft(tokenId);
+    const { parts, equip, unequip, getChildrenToEquipPreview } = useNft(tokenId);
+    const isSlotEquipped = (part: IBasePart): boolean =>
+      !!part.metadataUri && !!part.equippable && part.equippable.length > 0;
+    const isSlot = (part: IBasePart): boolean => part.partType === "Slot";
 
     return {
       parts,
       unequip,
-      tokenId
+      isSlotEquipped,
+      isSlot,
+      getChildrenToEquipPreview,
+      equip,
+      tokenId,
     };
   },
 });
@@ -39,21 +47,24 @@ export default defineComponent({
         :key="`part-${index}`"
       >
         <div>
-          <img :src="part.metadataUri" width="200" />
+          <img :src="part.metadataUri" width="200" /><br />
           <button
-            v-if="
-              part.metadataUri && part.equippable && part.equippable.length > 0
-            "
+            v-if="isSlot(part) && isSlotEquipped(part)"
             @click="unequip(part.id)"
           >
             Unequip
           </button>
         </div>
-        <div>
-          <pre>{{ part }}</pre>
+        <div v-if="isSlot(part) && !isSlotEquipped(part)">
+          <AcceptedEquipment
+            :tokenId="tokenId"
+            :slotId="Number(part.id)"
+            :getChildren="getChildrenToEquipPreview"
+            :equip="equip"
+          />
         </div>
         <div>
-          <Equipment :tokenId="tokenId" :slotId="Number(part.id)" />
+          <pre>{{ part }}</pre>
         </div>
       </div>
     </div>
@@ -93,5 +104,9 @@ export default defineComponent({
 button {
   margin: 6px;
   padding: 10px;
+}
+
+pre {
+  text-align: left;
 }
 </style>

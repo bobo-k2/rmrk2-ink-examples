@@ -12,6 +12,7 @@ export interface IBasePart {
   partType: PartType;
   equippable?: string[] | '*';
   partUri?: string;
+  metadataUri?: string;
   isEquippableByAll?: boolean;
   z?: number;
 }
