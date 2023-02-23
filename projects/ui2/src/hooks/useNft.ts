@@ -16,8 +16,8 @@ export interface AssetPreview {
 
 export const useNft = (tokenId: number) => {
   const parts = ref<IBasePart[]>([]);
-  const chunkyAddress = "5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY";
-  const partsAddress = "5EaQghKYQks1Ve3CNzJRLXYGPVwt2NsM2i3RkQ9kvNKCvLx8";
+  const chunkyAddress = "5CbHw8EqBmczMggM6WThz6dn4hMHhyBg48GqN8VciKDWC1z3";
+  const partsAddress = "5FVH3Hg3S7N9Ask4D5uLo5VD9B8rKo1BZndTgjSTY7VNYWVv";
 
   const fetchNftParts = async (): Promise<void> => {
     parts.value = await readNft(chunkyAddress, partsAddress, tokenId);

@@ -124,6 +124,8 @@ export const buildToken = async (
   // *************************************** Add assets to parts as deployer
   console.log('Deployer adds assets to chunky parts');
   const tokenId_2 = { u64: 2 };
+  const tokenId_3 = { u64: 3 };
+  const tokenId_4 = { u64: 4 };
   await mintTokenParts(chunkyPartsAddress, chunkyAddress);
 
   // *************************************** Bob approves chunky contract chunky parts (for bones for nesting on Chunky)
@@ -151,7 +153,29 @@ export const buildToken = async (
     )
   );
 
-  // *************************************** Bob adds 2 bones to chunky
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'psp34::approve',
+      bob,
+      chunky.address,
+      tokenId_3,
+      true
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'psp34::approve',
+      bob,
+      chunky.address,
+      tokenId_4,
+      true
+    )
+  );
+
+  // *************************************** Bob adds parts to chunky
   console.log('Adding bones to Chunky');
 
   console.log(
@@ -165,6 +189,20 @@ export const buildToken = async (
     await executeCall(chunky, 'nesting::addChild', bob, tokenId, [
       chunkyParts.address,
       tokenId_2,
+    ])
+  );
+
+  console.log(
+    await executeCall(chunky, 'nesting::addChild', bob, tokenId, [
+      chunkyParts.address,
+      tokenId_3,
+    ])
+  );
+
+  console.log(
+    await executeCall(chunky, 'nesting::addChild', bob, tokenId, [
+      chunkyParts.address,
+      tokenId_4,
     ])
   );
 

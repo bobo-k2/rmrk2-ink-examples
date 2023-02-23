@@ -13,6 +13,12 @@ export enum PartIds {
   FlagPreview = 4,
   FlagLeft = 5,
   FlagRight = 6,
+  PencilPreview = 7,
+  PencilLeft = 8,
+  PencilRight = 9,
+  SpearPreview = 10,
+  SpearLeft = 11,
+  SpearRight = 12,
 }
 
 enum EquipGroups {
@@ -115,9 +121,83 @@ export const mintTokenParts = async (
     )
   );
 
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetEntry',
+      alice,
+      PartIds.PencilPreview,
+      EquipGroups.Preview,
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_pencil_thumb.png',
+      []
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetEntry',
+      alice,
+      PartIds.PencilLeft,
+      EquipGroups.LeftHand,
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_pencil_left.svg',
+      []
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetEntry',
+      alice,
+      PartIds.PencilRight,
+      EquipGroups.RightHand,
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_pencil_right.svg',
+      []
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetEntry',
+      alice,
+      PartIds.SpearPreview,
+      EquipGroups.Preview,
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_spear_thumb.png',
+      []
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetEntry',
+      alice,
+      PartIds.SpearLeft,
+      EquipGroups.LeftHand,
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_spear_left.svg',
+      []
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetEntry',
+      alice,
+      PartIds.SpearRight,
+      EquipGroups.RightHand,
+      'ipfs://QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL/Chunky%20Items/Chunky_spear_right.svg',
+      []
+    )
+  );
+
   console.log('Adding assets to tokens');
   const tokenId1 = { u64: 1 };
   const tokenId2 = { u64: 2 };
+  const tokenId3 = { u64: 3 };
+  const tokenId4 = { u64: 4 };
 
   // Add bone assets to token 1
   console.log(
@@ -153,7 +233,7 @@ export const mintTokenParts = async (
     )
   );
 
-  // Add bone assets to token 2
+  // Add flag assets to token 2
   console.log(
     await executeCall(
       chunkyParts,
@@ -183,6 +263,74 @@ export const mintTokenParts = async (
       bob,
       tokenId2,
       PartIds.FlagRight,
+      null
+    )
+  );
+
+  // Add pencil assets to token 3
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetToToken',
+      bob,
+      tokenId3,
+      PartIds.PencilPreview,
+      null
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetToToken',
+      bob,
+      tokenId3,
+      PartIds.PencilLeft,
+      null
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetToToken',
+      bob,
+      tokenId3,
+      PartIds.PencilRight,
+      null
+    )
+  );
+
+  // Add spear assets to token 4
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetToToken',
+      bob,
+      tokenId4,
+      PartIds.SpearPreview,
+      null
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetToToken',
+      bob,
+      tokenId4,
+      PartIds.SpearLeft,
+      null
+    )
+  );
+
+  console.log(
+    await executeCall(
+      chunkyParts,
+      'multiAsset::addAssetToToken',
+      bob,
+      tokenId4,
+      PartIds.SpearRight,
       null
     )
   );
