@@ -6,7 +6,7 @@ import { getApi, getGasLimit, getSigner } from './common_api';
 import { ALICE_URI } from './consts';
 import Files from 'fs';
 
-const deployRmrkContract = async (
+export const deployRmrkContract = async (
   name: string,
   symbol: string,
   baseUri: string,

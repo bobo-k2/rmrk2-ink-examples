@@ -6,8 +6,10 @@ import { ISubmittableResult } from '@polkadot/types/types';
 import { rmrkAbi } from '../abi/rmrk';
 import { ApiBase } from '@polkadot/api/base';
 import Contract from './typed_contracts/contracts/rmrk_contract';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 const WSS_ENDPOINT = 'ws://localhost:9944';
+// const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 // The two below can be fetched from a chain by querying const system.blockWeights: FrameSystemLimitsBlockWeights.
 const PROOF_SIZE = 531_072; // 5_242_880;
@@ -36,10 +38,13 @@ export const getContract = async (
   return new ContractPromise(api, abi, address);
 };
 
-export const getTypedContract = async (address: string, signer: KeyringPair): Promise<Contract> => {
+export const getTypedContract = async (
+  address: string,
+  signer: KeyringPair
+): Promise<Contract> => {
   const api = await getApi();
   return new Contract(address, signer, api);
-}
+};
 
 export const getGasLimit = (
   api: ApiPromise | ApiBase<'promise'>,
@@ -88,7 +93,7 @@ export const executeCallWithValue = async (
     },
     ...params
   );
-  
+
   console.log(
     `Call: ${call}, result: ${JSON.stringify(txResult.result.toHuman())}`
   );
@@ -130,6 +135,58 @@ export const executeCall = async (
   ...params: unknown[]
 ): Promise<boolean> => {
   return await executeCallWithValue(contract, call, signer, null, ...params);
+};
+
+export const getCall = async (
+  contract: ContractPromise,
+  call: string,
+  signer: KeyringPair,
+  ...params: unknown[]
+): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
+  const txResult = await contract.query[call](
+    signer.address,
+    {
+      gasLimit: getGasLimit(contract.api),
+      storageDepositLimit: null,
+    },
+    ...params
+  );
+
+  if (txResult.result.isErr || txResult.result.toString().includes('Revert')) {
+    throw txResult.result.value;
+  }
+
+  const extrinsic = contract.tx[call](
+    {
+      gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
+      storageDepositLimit: null,
+    },
+    ...params
+  );
+
+  return extrinsic;
+};
+
+export const executeCalls = async (
+  calls: SubmittableExtrinsic<'promise', ISubmittableResult>[],
+  signer: KeyringPair
+): Promise<boolean> => {
+  const api = await getApi();
+
+  return new Promise((resolve) => {
+    api.tx.utility
+      .batchAll(calls)
+      .signAndSend(signer, (result: ISubmittableResult) => {
+        if (result.isFinalized && !result.dispatchError) {
+          resolve(true);
+        } else if (result.isFinalized && result.dispatchError) {
+          console.error(getErrorMessage(result.dispatchError));
+          resolve(false);
+        } else if (result.isError) {
+          resolve(false); 
+        }
+      });
+  });
 };
 
 const getErrorMessage = (dispatchError: DispatchError): string => {
