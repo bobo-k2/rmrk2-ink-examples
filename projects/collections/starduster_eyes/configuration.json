@@ -1,0 +1,14 @@
+{
+  "authorUrl": "https://astar.network",
+  "name": "Starduster Eyes",
+  "description": "Items from this collection could be equipped to Starduster collection.",
+  "symbol": "STDE",
+  "baseUri": "",
+  "collectionMetadataUri": "",
+  "collectionImagesUri": "ipfs://bafybeiaw5h2agodtwtj5uqlswzy5t3edm7ob6iyzy7ykhjtnvevdtalimq",
+  "maxSupply": 100, 
+  "pricePerMint": "1000000000000000000",
+  "royaltyReceiverAddress": "XLoLJBQoMPHMLXYhdFobSpH5GujRoUH8d1sUtaEtoBG7zaS",
+  "royalty": 1,
+  "numberOfEquippableSlots": 0
+}
