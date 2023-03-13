@@ -10,6 +10,13 @@
 //  - deployed contract
 //  - tokens minted and assets created
 
+// HOW TO BUILD
+// 1. Deploy NFT images to IPFS and update collectionImagesUri in the collection configuration.json
+// 2. Deploy collection.json to IPFS and update collectionMetadataUri in the collection configuration.json.
+// 3. Run build collection script (WARNING! baseUri configuration parameter should be empty).
+// 4. Deploy metadata folder to IPFS and update baseUri baseUri in the collection configuration.json
+// 5. Run build collection script once again just to update baseUri on the contract.
+
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
@@ -21,7 +28,7 @@ import { deployRmrkContract } from './deploy_contracts';
 import { executeCalls, getCall, getContract, getSigner } from './common_api';
 import { ALICE_URI } from './consts';
 
-export const buildCollection = async (basePath: string): Promise<void> => {
+export const buildCollection = async (basePath: string, metadataOnly = true): Promise<void> => {
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
   await cryptoWaitReady();
@@ -29,13 +36,19 @@ export const buildCollection = async (basePath: string): Promise<void> => {
 
   // Load collection configuration.
   const configuration = loadConfiguration(basePath);
-  console.log(configuration);
+  console.debug(configuration);
+
+  // If contract is already deployed just update metadata
+  // if (configuration.contractAddress) {
+  //   // update contract metadata here.
+  //   return;
+  // }
 
   // Deploy a new contract
   const contractAddress = await deployRmrkContract(
     configuration.name,
     configuration.symbol,
-    configuration.collectionImagesUri,
+    configuration.baseUri,
     BigInt(configuration.maxSupply),
     BigInt(configuration.pricePerMint),
     configuration.collectionMetadataUri,
@@ -52,10 +65,9 @@ export const buildCollection = async (basePath: string): Promise<void> => {
     contractAddress,
     configuration.numberOfEquippableSlots,
     basePath,
-    configuration.collectionImagesUri
+    configuration.collectionMetadataUri.replace('/collection.json', '')
   );
   calls.push(await getCall(contract, 'base::addPartList', signer, catalog));
-  console.log('catalog', catalog);
 
   // Write metadata.
   writeTokenMetadata(basePath, catalog, configuration);
@@ -137,6 +149,7 @@ export const createCatalog = async (
   const fixedPartsZ: number[] = [];
   const assetsPath = `${basePath}assets`;
 
+  console.log('Creating a catalog');
   // Create fixed parts.
   // TODO see how to exclude hidden files (e.g. .DS_Store)
   const folders = fs
@@ -178,6 +191,7 @@ export const createCatalog = async (
 };
 
 const loadConfiguration = (assetsPath: string): CollectionConfiguration => {
+  console.log(`Loading collection configuration from ${assetsPath}`)
   const config = JSON.parse(
     fs.readFileSync(`${assetsPath}configuration.json`, 'utf-8')
   );
@@ -219,4 +233,4 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-buildCollection('../collections/starduster/');
+buildCollection('../collections/starduster-eyes/');

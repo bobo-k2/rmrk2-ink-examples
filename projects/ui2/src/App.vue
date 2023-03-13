@@ -1,16 +1,20 @@
 <template>
-  <NftViewer />
+  <div class="container">
+    <NftViewer2 :token-id="1" />
+    <NftViewer2 :token-id="2" />
+    <NftViewer2 :token-id="3" />
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import NftViewer from './components/NftViewer.vue';
+import { defineComponent } from "vue";
+import NftViewer2 from "./components/NftViewer2.vue";
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   components: {
-    NftViewer
-  }
+    NftViewer2,
+  },
 });
 </script>
 
@@ -22,5 +26,9 @@ export default defineComponent({
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.container {
+  position: relative;
 }
 </style>

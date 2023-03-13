@@ -16,6 +16,7 @@ export const deployRmrkContract = async (
   royaltyReceiver: string,
   royalty: number
 ): Promise<string | undefined> => {
+  console.log(`Deploying smart contract for ${name}`)
   const api = await getApi();
   const alice = getSigner(ALICE_URI);
   const contract = JSON.parse(

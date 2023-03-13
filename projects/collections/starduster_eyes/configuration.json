@@ -4,7 +4,7 @@
   "description": "Items from this collection could be equipped to Starduster collection.",
   "symbol": "STDE",
   "baseUri": "",
-  "collectionMetadataUri": "",
+  "collectionMetadataUri": "ipfs://bafkreihkasaaucwqp5gllbhiimm2nuwvgtoctd657k2pthvxxyahuokmrm",
   "collectionImagesUri": "ipfs://bafybeiaw5h2agodtwtj5uqlswzy5t3edm7ob6iyzy7ykhjtnvevdtalimq",
   "maxSupply": 100, 
   "pricePerMint": "1000000000000000000",
