@@ -826,7 +826,7 @@ export default class Methods {
 	* @param { (number | string | BN) } assetId,
 	* @returns { Result<Result<ReturnTypes.Asset, ReturnTypes.Error>, ReturnTypes.LangError> }
 	*/
-	"getAssetAndEquippableData" (
+		"getAssetAndEquippableData" (
 		tokenId: ArgumentTypes.Id,
 		assetId: (number | string | BN),
 		__options ? : GasLimit,
