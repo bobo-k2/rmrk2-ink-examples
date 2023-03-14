@@ -10,6 +10,7 @@ export interface Asset {
   equippableGroupId: number;
   assetUri: string;
   parts: Part[];
+  id: number;
 }
 
 export interface Part {
@@ -27,10 +28,14 @@ export const useNft2 = (contractAddress: string) => {
   const getToken = async (tokenId: number): Promise<Asset[]> => {
     const assets = await fetchNft(contractAddress, tokenId);
     tokenAssets.value = assets;
+    console.log(assets);
     return assets;
-  }
+  };
 
-  const fetchNft = async (contractAddress: string, tokenId: number): Promise<Asset[]> => {
+  const fetchNft = async (
+    contractAddress: string,
+    tokenId: number
+  ): Promise<Asset[]> => {
     // Signer will not work in real life. Since it is not required for reading I will tweak generated code.
     await cryptoWaitReady();
     const signer = getSigner(ALICE_URI);
@@ -43,13 +48,8 @@ export const useNft2 = (contractAddress: string) => {
     ).value.unwrap();
     const assetIds = acceptedTokenAssets.unwrap();
 
-    const assets = await Promise.all(
-      assetIds.map(async (id) => {
-        return contract.query["multiAsset::getAsset"](id);
-      })
-    );
-
-    for (const asset of assets) {
+    for (const assetId of assetIds) {
+      const asset = await contract.query["multiAsset::getAsset"](assetId);
       const assetValue = asset.value.unwrap();
       if (assetValue) {
         const uiAsset = {
@@ -58,6 +58,7 @@ export const useNft2 = (contractAddress: string) => {
             hex2ascii(assetValue?.assetUri?.toString() ?? "")
           ),
           parts: [],
+          id: assetId
         } as Asset;
 
         const partsToAdd: Part[] = [];
@@ -74,11 +75,17 @@ export const useNft2 = (contractAddress: string) => {
                 hex2ascii(partValue.partUri.toString() ?? "")
               ),
             } as Part;
-            
+
             // Equipment
             if (partToAdd.partType === PartType.slot) {
-              const equipment = await contract.query.getEquipment(id, partToAdd.id);
-              console.log(equipment.value.ok);
+              const equipment = await contract.query.getEquipment(
+                id,
+                partToAdd.id
+              );
+              const equipmentValue = equipment.value.ok ? equipment.value.unwrap() : null;
+              if (equipmentValue?.childNft[0] && equipmentValue?.childNft[1]?.u64) {
+                partToAdd.children = await fetchNft(equipmentValue?.childNft[0].toString(), equipmentValue.childNft[1].u64)
+              }
             }
 
             partsToAdd.push(partToAdd);
@@ -94,8 +101,6 @@ export const useNft2 = (contractAddress: string) => {
       }
     }
 
-    console.log(result);
-    tokenAssets.value = result;
     return result;
   };
 

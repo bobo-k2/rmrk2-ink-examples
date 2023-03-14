@@ -15,7 +15,7 @@
 // 2. Deploy collection.json to IPFS and update collectionMetadataUri in the collection configuration.json.
 // 3. Run build collection script (WARNING! baseUri configuration parameter should be empty).
 //    This step will generate NFTs metadata only
-// 4. Deploy metadata folder (deploy folder, not filed) to IPFS and update baseUri baseUri in the collection configuration.json
+// 4. Deploy metadata folder (deploy folder, not files) to IPFS and update baseUri baseUri in the collection configuration.json
 // 5. Run build collection script once again to deploy contract and create collection.
 
 // How to allow equipping to base (i.e. there are 2 RMRK contracts, one with base parts and another with equippables)
@@ -252,5 +252,8 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-buildCollection('../collections/starduster/');
+// buildCollection('../collections/starduster/');
 // buildCollection('../collections/starduster-eyes/');
+// buildCollection('../collections/starduster-mouths/');
+// buildCollection('../collections/starduster-headwear/');
+buildCollection('../collections/starduster-farts/');
