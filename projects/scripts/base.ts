@@ -15,7 +15,6 @@ export interface Property {
 }
 
 export interface CollectionConfiguration {
-  contractAddress?: string;
   authorUrl: string;
   name: string;
   description: string;

@@ -17,16 +17,19 @@ import { useNft2 } from "../hooks/useNft2";
 
 export default defineComponent({
   props: {
+    contractAddress: {
+      type: String,
+      required: true,
+    },
     tokenId: {
       type: Number,
       required: true,
     },
   },
   setup(props) {
-    const contractAddress = "5Dorf5aEgDE5ifJkW23AixZXU3EXzUEooWCwUkn2Kqfjd6GK";
-    const { fetchNft, tokenAssets } = useNft2(contractAddress);
+    const { getToken, tokenAssets } = useNft2(props.contractAddress);
     console.log(props.tokenId);
-    fetchNft(props.tokenId);
+    getToken(props.tokenId);
 
     return {
       tokenAssets,
@@ -37,6 +40,7 @@ export default defineComponent({
 
 <style scoped>
 .container {
+  border: 1px solid gray  ;
 }
 
 .image-container {
@@ -44,7 +48,7 @@ export default defineComponent({
 }
 
 .image {
-  position: absolute;
-  width: 400px;
+  /* position: absolute; */
+  width: 200px;
 }
 </style>

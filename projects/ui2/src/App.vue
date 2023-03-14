@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <NftViewer2 :token-id="1" />
-    <NftViewer2 :token-id="2" />
-    <NftViewer2 :token-id="3" />
+    <NftViewer2 :token-id="1" contract-address="5DgTzJGiiSRnn4unvmjckrDDC4WjSQNqEk6HUpvrW4kWP6dJ" />
+    <!-- <NftViewer2 :token-id="2" contract-address="5G6PvpL47Q6wH6C6zKwJrN8fNeQZKB6QuxNWRFs6desp1pDC" /> -->
+    <!-- <NftViewer2 :token-id="1" contract-address="5G6PvpL47Q6wH6C6zKwJrN8fNeQZKB6QuxNWRFs6desp1pDC" /> -->
   </div>
 </template>
 

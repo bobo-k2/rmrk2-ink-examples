@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { compile, ref } from "vue";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { sanitizeIpfsUrl } from "../../../scripts/common";
 import { getSigner, getTypedContract } from "../../../scripts/common_api";
@@ -13,16 +13,24 @@ export interface Asset {
 }
 
 export interface Part {
+  id: number;
   partType: PartType;
   z: number;
   partUri: string;
   isEquippableByAll: boolean;
+  children: Asset[];
 }
 
 export const useNft2 = (contractAddress: string) => {
   const tokenAssets = ref<Asset[]>([]);
 
-  const fetchNft = async (tokenId: number): Promise<Asset[]> => {
+  const getToken = async (tokenId: number): Promise<Asset[]> => {
+    const assets = await fetchNft(contractAddress, tokenId);
+    tokenAssets.value = assets;
+    return assets;
+  }
+
+  const fetchNft = async (contractAddress: string, tokenId: number): Promise<Asset[]> => {
     // Signer will not work in real life. Since it is not required for reading I will tweak generated code.
     await cryptoWaitReady();
     const signer = getSigner(ALICE_URI);
@@ -52,28 +60,33 @@ export const useNft2 = (contractAddress: string) => {
           parts: [],
         } as Asset;
 
-        const parts = await Promise.all(
-          assetValue.partIds.map((id) => {
-            return contract.query["base::getPart"](id);
-          })
-        );
-
         const partsToAdd: Part[] = [];
-        for (const part of parts) {
+        for (const partId of assetValue.partIds) {
+          const part = await contract.query["base::getPart"](partId);
           const partValue = part.value.unwrap();
           if (partValue) {
-            partsToAdd.push({
+            const partToAdd = {
+              id: partId,
               partType: partValue.partType,
               z: partValue.z,
               isEquippableByAll: partValue.isEquippableByAll,
               partUri: sanitizeIpfsUrl(
                 hex2ascii(partValue.partUri.toString() ?? "")
               ),
-            } as Part);
+            } as Part;
+            
+            // Equipment
+            if (partToAdd.partType === PartType.slot) {
+              const equipment = await contract.query.getEquipment(id, partToAdd.id);
+              console.log(equipment.value.ok);
+            }
+
+            partsToAdd.push(partToAdd);
           }
         }
+
         const filteredAndSortedParts = partsToAdd
-          .filter((x) => x.partType === "Fixed")
+          //.filter((x) => x.partType === "Fixed")
           .sort((x, y) => (x?.z ?? 0) - (y?.z ?? 0));
         uiAsset.parts.push(...filteredAndSortedParts);
 
@@ -87,7 +100,7 @@ export const useNft2 = (contractAddress: string) => {
   };
 
   return {
-    fetchNft,
+    getToken,
     tokenAssets,
   };
 };

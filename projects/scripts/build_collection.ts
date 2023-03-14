@@ -10,12 +10,21 @@
 //  - deployed contract
 //  - tokens minted and assets created
 
-// HOW TO BUILD
-// 1. Deploy NFT images to IPFS and update collectionImagesUri in the collection configuration.json
+// HOW TO BUILD COLLECTION
+// 1. Deploy assets folder (deploy folder, not files) to IPFS and update collectionImagesUri in the collection configuration.json
 // 2. Deploy collection.json to IPFS and update collectionMetadataUri in the collection configuration.json.
 // 3. Run build collection script (WARNING! baseUri configuration parameter should be empty).
-// 4. Deploy metadata folder to IPFS and update baseUri baseUri in the collection configuration.json
-// 5. Run build collection script once again just to update baseUri on the contract.
+//    This step will generate NFTs metadata only
+// 4. Deploy metadata folder (deploy folder, not filed) to IPFS and update baseUri baseUri in the collection configuration.json
+// 5. Run build collection script once again to deploy contract and create collection.
+
+// How to allow equipping to base (i.e. there are 2 RMRK contracts, one with base parts and another with equippables)
+// 1. On base call base::addEquippableAddresses for all equippable slots
+// 2. Call psp34::approve on child to approve base.
+// 3.??????  On child contract call equippable::setValidParentForEqquippableGroup
+// 4. Add child to base. On base call nesting::addChild
+// 5. Call equippable::equip on base 
+
 
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
@@ -28,7 +37,10 @@ import { deployRmrkContract } from './deploy_contracts';
 import { executeCalls, getCall, getContract, getSigner } from './common_api';
 import { ALICE_URI } from './consts';
 
-export const buildCollection = async (basePath: string, metadataOnly = true): Promise<void> => {
+export const buildCollection = async (
+  basePath: string,
+  metadataOnly = true
+): Promise<void> => {
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
   await cryptoWaitReady();
@@ -38,39 +50,42 @@ export const buildCollection = async (basePath: string, metadataOnly = true): Pr
   const configuration = loadConfiguration(basePath);
   console.debug(configuration);
 
-  // If contract is already deployed just update metadata
-  // if (configuration.contractAddress) {
-  //   // update contract metadata here.
-  //   return;
-  // }
-
+  let contractAddress = '';
   // Deploy a new contract
-  const contractAddress = await deployRmrkContract(
-    configuration.name,
-    configuration.symbol,
-    configuration.baseUri,
-    BigInt(configuration.maxSupply),
-    BigInt(configuration.pricePerMint),
-    configuration.collectionMetadataUri,
-    configuration.royaltyReceiverAddress,
-    configuration.royalty
-  );
-  const contract = await getContract(contractAddress);
-  console.log(
-    `Contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
-  );
+  if (configuration.baseUri) {
+    contractAddress = await deployRmrkContract(
+      configuration.name,
+      configuration.symbol,
+      configuration.baseUri,
+      BigInt(configuration.maxSupply),
+      BigInt(configuration.pricePerMint),
+      configuration.collectionMetadataUri,
+      configuration.royaltyReceiverAddress,
+      configuration.royalty
+    );
+
+    console.log(
+      `Contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
+    );
+  }
 
   // Create catalog.
   const catalog = await createCatalog(
     contractAddress,
     configuration.numberOfEquippableSlots,
     basePath,
-    configuration.collectionMetadataUri.replace('/collection.json', '')
+    configuration.collectionImagesUri
   );
-  calls.push(await getCall(contract, 'base::addPartList', signer, catalog));
 
   // Write metadata.
-  writeTokenMetadata(basePath, catalog, configuration);
+  if (!configuration.baseUri) {
+    writeTokenMetadata(basePath, catalog, configuration);
+    return;
+  }
+
+  // Create contract instance.
+  const contract = await getContract(contractAddress);
+  calls.push(await getCall(contract, 'base::addPartList', signer, catalog));
 
   // Mint tokens
   calls.push(
@@ -90,14 +105,18 @@ export const buildCollection = async (basePath: string, metadataOnly = true): Pr
     equippableSlots.push(i);
   }
 
-  for (let i = 0; i < catalog.length - configuration.numberOfEquippableSlots; i++) {
+  for (
+    let i = 0;
+    i < catalog.length - configuration.numberOfEquippableSlots;
+    i++
+  ) {
     calls.push(
       await getCall(
         contract,
         'multiAsset::addAssetEntry',
         signer,
         (i + 1).toString(), // Asset id
-        '0',                // Equippable group id
+        '0', // Equippable group id
         catalog[i].partUri, // Asset uri
         [i, ...equippableSlots]
       )
@@ -107,7 +126,7 @@ export const buildCollection = async (basePath: string, metadataOnly = true): Pr
   // Execute add asset entry calls
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
-  calls = []
+  calls = [];
 
   // Add assets to a token
   for (let i = 0; i < configuration.maxSupply; i++) {
@@ -117,7 +136,7 @@ export const buildCollection = async (basePath: string, metadataOnly = true): Pr
         'multiAsset::addAssetToToken',
         signer,
         { u64: i + 1 }, // Token Id
-        (i % assetsCount + 1).toString(), // Asset Id
+        ((i % assetsCount) + 1).toString(), // Asset Id
         null
       )
     );
@@ -191,7 +210,7 @@ export const createCatalog = async (
 };
 
 const loadConfiguration = (assetsPath: string): CollectionConfiguration => {
-  console.log(`Loading collection configuration from ${assetsPath}`)
+  console.log(`Loading collection configuration from ${assetsPath}`);
   const config = JSON.parse(
     fs.readFileSync(`${assetsPath}configuration.json`, 'utf-8')
   );
@@ -233,4 +252,5 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-buildCollection('../collections/starduster-eyes/');
+buildCollection('../collections/starduster/');
+// buildCollection('../collections/starduster-eyes/');
