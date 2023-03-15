@@ -1,4 +1,5 @@
-export const ALICE_URI = '//Alice';
+// export const ALICE_URI = '//Alice';
+export const ALICE_URI = 'burger wedding wash hero problem target second stage muscle safe first invite'; // RMRK
 export const BOB_URI = '//Bob';
 
 export const CHUNKY_ADDRESS = '5D1Vr9rWBrd6TJ7Qfak9CZ8ocvkQjLqHKWVsSYCCqGyPEtPz';

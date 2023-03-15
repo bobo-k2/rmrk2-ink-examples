@@ -8,8 +8,8 @@ import { ApiBase } from '@polkadot/api/base';
 import Contract from './typed_contracts/contracts/rmrk_contract';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
-const WSS_ENDPOINT = 'ws://localhost:9944';
-// const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
+// const WSS_ENDPOINT = 'ws://localhost:9944';
+const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 // The two below can be fetched from a chain by querying const system.blockWeights: FrameSystemLimitsBlockWeights.
 const PROOF_SIZE = 531_072; // 5_242_880;

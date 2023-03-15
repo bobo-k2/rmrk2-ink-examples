@@ -252,8 +252,8 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-// buildCollection('../collections/starduster/');
+buildCollection('../collections/starduster/');
 // buildCollection('../collections/starduster-eyes/');
 // buildCollection('../collections/starduster-mouths/');
 // buildCollection('../collections/starduster-headwear/');
-buildCollection('../collections/starduster-farts/');
+// buildCollection('../collections/starduster-farts/');
