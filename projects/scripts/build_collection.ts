@@ -23,8 +23,7 @@
 // 2. Call psp34::approve on child to approve base.
 // 3.??????  On child contract call equippable::setValidParentForEqquippableGroup
 // 4. Add child to base. On base call nesting::addChild
-// 5. Call equippable::equip on base 
-
+// 5. Call equippable::equip on base
 
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
@@ -34,7 +33,13 @@ import path from 'path';
 import { IBasePart } from 'create_catalog';
 import { CollectionConfiguration, Metadata } from 'base';
 import { deployRmrkContract } from './deploy_contracts';
-import { executeCalls, getCall, getContract, getSigner } from './common_api';
+import {
+  executeCalls,
+  getBatchWeight,
+  getCall,
+  getContract,
+  getSigner,
+} from './common_api';
 import { ALICE_URI } from './consts';
 
 export const buildCollection = async (
@@ -50,9 +55,9 @@ export const buildCollection = async (
   const configuration = loadConfiguration(basePath);
   console.debug(configuration);
 
-  let contractAddress = '';
+  let contractAddress = configuration.contractAddress;
   // Deploy a new contract
-  if (configuration.baseUri) {
+  if (configuration.baseUri && !configuration.contractAddress) {
     contractAddress = await deployRmrkContract(
       configuration.name,
       configuration.symbol,
@@ -98,6 +103,14 @@ export const buildCollection = async (
     )
   );
 
+  // Execute mintMany and addPartList calls
+  console.log(
+    `Executing  mintMany and addPartList calls. Number of calls ${calls.length}`
+  );
+  await executeCalls(calls, signer);
+  console.log('Batch call executed.');
+  calls = [];
+
   // Create assets
   const assetsCount = catalog.length - configuration.numberOfEquippableSlots;
   const equippableSlots: number[] = [];
@@ -124,6 +137,9 @@ export const buildCollection = async (
   }
 
   // Execute add asset entry calls
+  console.log(
+    `Executing addAssetEntry calls. Number of calls ${calls.length}`
+  );
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
   calls = [];
@@ -143,8 +159,11 @@ export const buildCollection = async (
   }
 
   // Execute all add asset to token calls
+  console.log('Executing addAssetToToken');
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
+  console.log('Script completed');
+  process.exit(0);
 };
 
 /**
@@ -252,8 +271,8 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-buildCollection('../collections/starduster/');
+// buildCollection('../collections/starduster/');
 // buildCollection('../collections/starduster-eyes/');
 // buildCollection('../collections/starduster-mouths/');
 // buildCollection('../collections/starduster-headwear/');
-// buildCollection('../collections/starduster-farts/');
+buildCollection('../collections/starduster-farts/');

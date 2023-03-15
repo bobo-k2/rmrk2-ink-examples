@@ -8,12 +8,13 @@ import { ApiBase } from '@polkadot/api/base';
 import Contract from './typed_contracts/contracts/rmrk_contract';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
+export interface WeightInfo {
+  proofSize: bigint;
+  refTime: bigint;
+}
+
 // const WSS_ENDPOINT = 'ws://localhost:9944';
 const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
-
-// The two below can be fetched from a chain by querying const system.blockWeights: FrameSystemLimitsBlockWeights.
-const PROOF_SIZE = 531_072; // 5_242_880;
-const REF_TIME = 9_480_453_976; // 500_000_000_000;
 
 let api: ApiPromise;
 
@@ -46,14 +47,16 @@ export const getTypedContract = async (
   return new Contract(address, signer, api);
 };
 
-export const getGasLimit = (
-  api: ApiPromise | ApiBase<'promise'>,
-  max = true
-): WeightV2 => {
-  return api.registry.createType('WeightV2', {
-    refTime: max ? 500_000_000_000 : REF_TIME,
-    proofSize: max ? 5_242_880 : PROOF_SIZE,
-  }) as WeightV2;
+let gasLimit: WeightV2;
+export const getGasLimit = (api: ApiPromise | ApiBase<'promise'>): WeightV2 => {
+  if (!gasLimit) {
+    gasLimit = api.registry.createType(
+      'WeightV2',
+      api.consts.system.blockWeights['maxBlock']
+    ) as WeightV2;
+  }
+
+  return gasLimit;
 };
 
 export const doubleGasLimit = (
@@ -61,8 +64,8 @@ export const doubleGasLimit = (
   weight: WeightV2
 ): WeightV2 => {
   return api.registry.createType('WeightV2', {
-    refTime: weight.refTime.toBn().muln(2),
-    proofSize: weight.proofSize.toBn().muln(2),
+    refTime: weight.refTime.toBn().muln(1.1),
+    proofSize: weight.proofSize.toBn().muln(1.1),
   }) as WeightV2;
 };
 
@@ -143,10 +146,11 @@ export const getCall = async (
   signer: KeyringPair,
   ...params: unknown[]
 ): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
+  const gasLimit = getGasLimit(contract.api);
   const txResult = await contract.query[call](
     signer.address,
     {
-      gasLimit: getGasLimit(contract.api),
+      gasLimit,
       storageDepositLimit: null,
     },
     ...params
@@ -172,21 +176,81 @@ export const executeCalls = async (
   signer: KeyringPair
 ): Promise<boolean> => {
   const api = await getApi();
+  const batches: SubmittableExtrinsic<'promise', ISubmittableResult>[][] = [];
+  // Create batch of batches, each batch to use about a half of max block weight.
+  const refTime = gasLimit.refTime.toBigInt() / BigInt(2);
+  const proofSize = gasLimit.proofSize.toBigInt() / BigInt(2)
+  let currentRefTime = BigInt(0);
+  let currentProofSize = BigInt(0);
+  let currentBatch:SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
-  return new Promise((resolve) => {
-    api.tx.utility
-      .batchAll(calls)
-      .signAndSend(signer, (result: ISubmittableResult) => {
-        if (result.isFinalized && !result.dispatchError) {
-          resolve(true);
-        } else if (result.isFinalized && result.dispatchError) {
-          console.error(getErrorMessage(result.dispatchError));
-          resolve(false);
-        } else if (result.isError) {
-          resolve(false); 
-        }
-      });
-  });
+  for(const call of calls) {
+    if(currentRefTime > refTime || currentProofSize > proofSize) {
+      batches.push(currentBatch);
+      currentBatch = [];
+      currentProofSize = BigInt(0);
+      currentRefTime = BigInt(0);
+    }
+
+    const paymentInfo = await call.paymentInfo(signer.address);
+    currentProofSize += paymentInfo.weight.proofSize.toBigInt();
+    currentRefTime += paymentInfo.weight.refTime.toBigInt();
+    currentBatch.push(call);
+  }
+
+  batches.push(currentBatch);
+
+  for(let i = 0; i < batches.length; i++ ) {
+    const batch = batches[i];
+    console.log(`Executing batch ${ i+1 } / ${ batches.length }`)
+    await new Promise((resolve) => {
+      api.tx.utility
+        .batchAll(batch)
+        .signAndSend(signer, (result: ISubmittableResult) => {
+          if (result.isFinalized && !result.dispatchError) {
+            resolve(true);
+          } else if (result.isFinalized && result.dispatchError) {
+            console.error(getErrorMessage(result.dispatchError));
+            resolve(false);
+          } else if (result.isError) {
+            resolve(false);
+          }
+        });
+    });
+  }
+
+  return true;
+
+  // return new Promise((resolve) => {
+  //   api.tx.utility
+  //     .batchAll(calls)
+  //     .signAndSend(signer, (result: ISubmittableResult) => {
+  //       if (result.isFinalized && !result.dispatchError) {
+  //         resolve(true);
+  //       } else if (result.isFinalized && result.dispatchError) {
+  //         console.error(getErrorMessage(result.dispatchError));
+  //         resolve(false);
+  //       } else if (result.isError) {
+  //         resolve(false);
+  //       }
+  //     });
+  // });
+};
+
+export const getBatchWeight = async (
+  api: ApiPromise | ApiBase<'promise'>,
+  calls: SubmittableExtrinsic<'promise', ISubmittableResult>[],
+  callerAddress: string
+): Promise<WeightInfo> => {
+  let result = { refTime: BigInt(0), proofSize: BigInt(0) } as WeightInfo;
+  for (const call of calls) {
+    const info = await call.paymentInfo(callerAddress);
+    result.proofSize += info.weight.proofSize.toBigInt();
+    result.refTime += info.weight.refTime.toBigInt();
+    // console.log(info.weight.toHuman());
+  }
+
+  return result;
 };
 
 const getErrorMessage = (dispatchError: DispatchError): string => {
