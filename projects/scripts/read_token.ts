@@ -270,11 +270,3 @@ export const hex2ascii = (hex: string): string => {
   }
   return result;
 };
-
-// readNft(
-//   '5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY',
-//   '5EaQghKYQks1Ve3CNzJRLXYGPVwt2NsM2i3RkQ9kvNKCvLx8',
-//   1
-// );
-
-// getEquippableChildren('5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY', 1);
