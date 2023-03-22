@@ -33,18 +33,20 @@ import path from 'path';
 import { IBasePart } from 'create_catalog';
 import { CollectionConfiguration, Metadata } from 'base';
 import { deployRmrkContract } from './deploy_contracts';
-import {
-  executeCalls,
-  getBatchWeight,
-  getCall,
-  getContract,
-  getSigner,
-} from './common_api';
+import { executeCall, executeCalls, getCall, getContract, getSigner } from './common_api';
 import { ALICE_URI } from './consts';
 
+/**
+ * Builds a RMRK NFT collection.
+ * @param basePath Path to the folder with deployment configuration, assets and metadata.
+ * @param parentContractAddress Parent contract address.
+ * Provide this parameter if you want to automatically add tokens from the collection to parent NFT.
+ * Assumption: Random child token will be added to random parent. Numbers of parent and child tokens are the same.
+ * @returns
+ */
 export const buildCollection = async (
   basePath: string,
-  metadataOnly = true
+  parentContractAddress: string = undefined
 ): Promise<void> => {
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
@@ -137,9 +139,7 @@ export const buildCollection = async (
   }
 
   // Execute add asset entry calls
-  console.log(
-    `Executing addAssetEntry calls. Number of calls ${calls.length}`
-  );
+  console.log(`Executing addAssetEntry calls. Number of calls ${calls.length}`);
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
   calls = [];
@@ -162,6 +162,44 @@ export const buildCollection = async (
   console.log('Executing addAssetToToken');
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
+
+  // Add child tokens
+  if (parentContractAddress) {
+    calls = [];
+    // Generate array from 1 to maxSupply and shuffle members.
+    const shuffledTokenIds = Array.from(
+      { length: configuration.maxSupply },
+      (_, index) => index + 1
+    ).sort(() => Math.random() - 0.5);
+
+    // Approve parent
+    await executeCall(
+      contract,
+      'psp34::approve',
+      signer,
+      parentContractAddress,
+      null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
+      true
+    )
+
+    const parentContract = await getContract(parentContractAddress);
+    for (let i = 0; i < configuration.maxSupply; i++) {
+      calls.push(
+        await getCall(
+          parentContract,
+          'nesting::addChild',
+          signer,
+          { u64: i + 1 }, // Parent token Id
+          [contractAddress, { u64: shuffledTokenIds[i] }]
+        )
+      );
+    }
+
+    console.log('Executing addChild batch');
+    await executeCalls(calls, signer);
+    console.log('Batch call executed.');
+  }
+
   console.log('Script completed');
   process.exit(0);
 };
@@ -271,8 +309,11 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-// buildCollection('../collections/starduster/');
-// buildCollection('../collections/starduster-eyes/');
+buildCollection('../collections/starduster/');
+// buildCollection(
+//   '../collections/starduster-eyes/',
+//   '5HBVbdEUP2wN8mF7VLJLBThEV766HQjrvbGWJczeFbKvKjSW'
+// );
 // buildCollection('../collections/starduster-mouths/');
 // buildCollection('../collections/starduster-headwear/');
-buildCollection('../collections/starduster-farts/');
+// buildCollection('../collections/starduster-farts/');
