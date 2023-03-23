@@ -3,6 +3,13 @@
 
 **Collections**
 
+New deployment
+
+Base
+  - contract address: ZM9hsSts4sqnUxHY5rxgE6QJQhAWyCqVs4zMm22xee89u8X
+
+
+
 Base (has 4 equippable slots)
   - contract address: `Wcg8cuKcJgQGm15tZ5F14JXuWehm1Q67K92jfbTpKPrPm6S`
   - collection metadata: `ipfs://bafybeihspohvpehtgc2mkpk3jmagoff24kkabsqi4iwamfnaf7rz7r6s3e/collection.json`

@@ -33,7 +33,13 @@ import path from 'path';
 import { IBasePart } from 'create_catalog';
 import { CollectionConfiguration, Metadata } from 'base';
 import { deployRmrkContract } from './deploy_contracts';
-import { executeCall, executeCalls, getCall, getContract, getSigner } from './common_api';
+import {
+  executeCall,
+  executeCalls,
+  getCall,
+  getContract,
+  getSigner,
+} from './common_api';
 import { ALICE_URI } from './consts';
 
 /**
@@ -42,12 +48,12 @@ import { ALICE_URI } from './consts';
  * @param parentContractAddress Parent contract address.
  * Provide this parameter if you want to automatically add tokens from the collection to parent NFT.
  * Assumption: Random child token will be added to random parent. Numbers of parent and child tokens are the same.
- * @returns
+ * @returns collection contract address
  */
 export const buildCollection = async (
   basePath: string,
   parentContractAddress: string = undefined
-): Promise<void> => {
+): Promise<string> => {
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
   await cryptoWaitReady();
@@ -122,7 +128,7 @@ export const buildCollection = async (
 
   for (
     let i = 0;
-    i < catalog.length - configuration.numberOfEquippableSlots;
+    i < assetsCount;
     i++
   ) {
     calls.push(
@@ -180,7 +186,7 @@ export const buildCollection = async (
       parentContractAddress,
       null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
       true
-    )
+    );
 
     const parentContract = await getContract(parentContractAddress);
     for (let i = 0; i < configuration.maxSupply; i++) {
@@ -201,7 +207,7 @@ export const buildCollection = async (
   }
 
   console.log('Script completed');
-  process.exit(0);
+  return contractAddress;
 };
 
 /**
@@ -222,7 +228,7 @@ export const createCatalog = async (
   imagesUri: string
 ): Promise<IBasePart[]> => {
   const result: IBasePart[] = [];
-  const fixedPartsZ: number[] = [];
+  const fixedParts: number[] = [];
   const assetsPath = `${basePath}assets`;
 
   console.log('Creating a catalog');
@@ -235,7 +241,7 @@ export const createCatalog = async (
 
   for (let folder of folders) {
     const z = parseInt(folder.split('_')[0]);
-    fixedPartsZ.push(z);
+    // fixedParts.push(z);
     const files = await fs.promises.readdir(`${assetsPath}/${folder}`);
     for (let file of files.filter((x) => x !== '.DS_Store')) {
       result.push({
@@ -249,17 +255,17 @@ export const createCatalog = async (
   // Create slots. Assumption, slots z order fills holes between fixed parts z indices.
   let slotsAdded = 0;
   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
-    if (fixedPartsZ.indexOf(i) === -1) {
+    if (slotsAdded >= numberOfSlots) {
+      break;
+    }
+
+    if (fixedParts.indexOf(i) === -1) {
       result.push({
         partType: 'Slot',
         equippable: [contractAddress],
         z: i,
       });
       slotsAdded++;
-    }
-
-    if (slotsAdded >= numberOfSlots) {
-      break;
     }
   }
 
@@ -309,11 +315,18 @@ const writeTokenMetadata = (
   console.log('Tokens metadata have been created.');
 };
 
-buildCollection('../collections/starduster/');
-// buildCollection(
-//   '../collections/starduster-eyes/',
-//   '5HBVbdEUP2wN8mF7VLJLBThEV766HQjrvbGWJczeFbKvKjSW'
-// );
-// buildCollection('../collections/starduster-mouths/');
-// buildCollection('../collections/starduster-headwear/');
-// buildCollection('../collections/starduster-farts/');
+const run = async (): Promise<void> => {
+  // Base contract
+  const baseAddress = await buildCollection('../collections/starduster/');
+  // Child contracts
+  await buildCollection('../collections/starduster-eyes/', baseAddress);
+  await buildCollection('../collections/starduster-mouths/', baseAddress);
+  await buildCollection('../collections/starduster-headwear/', baseAddress);
+  await buildCollection('../collections/starduster-farts/', baseAddress);
+  
+  console.log('\nBase contract address ', baseAddress);
+  process.exit(0);
+};
+
+run();
+
