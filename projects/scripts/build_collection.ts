@@ -241,7 +241,7 @@ export const createCatalog = async (
 
   for (let folder of folders) {
     const z = parseInt(folder.split('_')[0]);
-    // fixedParts.push(z);
+    fixedParts.push(z);
     const files = await fs.promises.readdir(`${assetsPath}/${folder}`);
     for (let file of files.filter((x) => x !== '.DS_Store')) {
       result.push({
