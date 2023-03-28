@@ -9,6 +9,9 @@ export default defineComponent({
   components: {
     AcceptedEquipment,
   },
+  props: {
+
+  },
   setup() {
     const tokenId = 1;
     const { parts, equip, unequip, getChildrenToEquipPreview } = useNft(tokenId);

@@ -50,38 +50,14 @@ export const readNft = async (
   const partsContract = await getContract(partsContractAddress);
   const signer = getSigner(ALICE_URI);
   const tokenId = { u64: id };
+  const contractTyped = await getTypedContract(mainContractAddress, signer);
 
-  // 1. Get assets
-  const { result, output } = await contract.query[
-    'multiAsset::getAcceptedTokenAssets'
-  ](
-    signer.address,
-    {
-      gasLimit: getGasLimit(contract.api),
-      storageDepositLimit: null,
-    },
-    tokenId
-  );
-
-  if (result.isOk) {
-    // TODO there should be a better way. Maybe TypeChain
-    const assetIds = JSON.parse(output?.toString() ?? '').ok as number[];
-    for (let assetId of assetIds) {
-      const { result, output } = await contract.query[
-        'equippable::getAssetAndEquippableData'
-      ](
-        signer.address,
-        {
-          gasLimit: getGasLimit(contract.api),
-          storageDepositLimit: null,
-        },
-        tokenId,
-        assetId
-      );
-
-      const { partIds } = <EquippableData>(
-        JSON.parse(output?.toString() ?? '').ok
-      );
+  const result = (await contractTyped.query.getAcceptedTokenAssets(tokenId)).value.unwrap();
+  if (result.ok) {
+      const assetIds = result.unwrap();
+      for (let assetId of assetIds) {
+      const equippableData = (await contractTyped.query.getAssetAndEquippableData(tokenId, assetId)).value.unwrap();
+      const partIds = equippableData.unwrap().partIds;
       const isComposable = partIds && partIds.length > 0;
 
       if (isComposable) {
@@ -226,31 +202,31 @@ export const getEquippableChildren = async (
   );
 
   if (children.value) {
-    for (let child of children.value) {
-      const partsContract = await getTypedContract(child[0].toString(), signer);
-      const childTokenId = IdBuilder.U64(child[1].u64 ?? 0);
-      const assetIds = await partsContract.query.getAcceptedTokenAssets(
-        childTokenId
-      );
+    // for (let child of children.value) {
+    //   const partsContract = await getTypedContract(child[0].toString(), signer);
+    //   const childTokenId = IdBuilder.U64(child[1].u64 ?? 0);
+    //   const assetIds = await partsContract.query.getAcceptedTokenAssets(
+    //     childTokenId
+    //   );
 
-      if (assetIds.value.ok) {
-        const assetsToAdd: ExtendedAsset[] = [];
-        for (let id of assetIds.value.unwrap()) {
-          const asset = await partsContract.query['multiAsset::getAsset'](id);
-          if (asset.value) {
-            assetsToAdd.push({
-              ...asset.value,
-              id,
-              gatewayUrl: sanitizeIpfsUrl(
-                hex2ascii(asset.value.assetUri.toString())
-              ),
-            } as ExtendedAsset);
-          }
-        }
+    //   if (assetIds.value.ok) {
+    //     const assetsToAdd: ExtendedAsset[] = [];
+    //     for (let id of assetIds.value.unwrap()) {
+    //       const asset = await partsContract.query['multiAsset::getAsset'](id);
+    //       if (asset.value) {
+    //         assetsToAdd.push({
+    //           ...asset.value,
+    //           id,
+    //           gatewayUrl: sanitizeIpfsUrl(
+    //             hex2ascii(asset.value.assetUri.toString())
+    //           ),
+    //         } as ExtendedAsset);
+    //       }
+    //     }
 
-        result.set(child[1], assetsToAdd);
-      }
-    }
+    //     result.set(child[1], assetsToAdd);
+    //   }
+    // }
   }
 
   return result;
@@ -294,11 +270,3 @@ export const hex2ascii = (hex: string): string => {
   }
   return result;
 };
-
-// readNft(
-//   '5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY',
-//   '5EaQghKYQks1Ve3CNzJRLXYGPVwt2NsM2i3RkQ9kvNKCvLx8',
-//   1
-// );
-
-// getEquippableChildren('5CU64KZzmRGRKoMAx8H35xwmpE8EWJCwPURz3c3tszx1ZuZY', 1);

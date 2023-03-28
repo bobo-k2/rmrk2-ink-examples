@@ -2,11 +2,12 @@ import { CodeSubmittableResult } from '@polkadot/api-contract/base';
 import { CodePromise } from '@polkadot/api-contract';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { getApi, getGasLimit, getSigner } from './common_api';
+import { WeightV2 } from '@polkadot/types/interfaces';
+import { doubleGasLimit, getApi, getGasLimit, getSigner } from './common_api';
 import { ALICE_URI } from './consts';
 import Files from 'fs';
 
-const deployRmrkContract = async (
+export const deployRmrkContract = async (
   name: string,
   symbol: string,
   baseUri: string,
@@ -16,14 +17,20 @@ const deployRmrkContract = async (
   royaltyReceiver: string,
   royalty: number
 ): Promise<string | undefined> => {
+  console.log(`Deploying smart contract for ${name}`)
   const api = await getApi();
   const alice = getSigner(ALICE_URI);
   const contract = JSON.parse(
     Files.readFileSync('../contract/rmrk_contract.contract').toString()
   );
   const code = new CodePromise(api, contract, contract.source.wasm);
+  
+  // TODO see how to get gas estimation for CodePromise.
   const tx = code.tx['new']!(
-    { gasLimit: getGasLimit(api, false), storageDepositLimit: null },
+    { gasLimit: api.registry.createType('WeightV2', {
+      refTime: 2_000_000_000,
+      proofSize: 50_000,
+    }) as WeightV2, storageDepositLimit: null },
     name,
     symbol,
     baseUri,
