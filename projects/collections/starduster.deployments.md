@@ -6,10 +6,22 @@
 New deployment
 
 Base
-  - contract address: ZM9hsSts4sqnUxHY5rxgE6QJQhAWyCqVs4zMm22xee89u8X
+  - contract address: ZpJd27qjg3VNk5gTSeMSVii8p4VLMBjy67mBvWDQWRRsZzm
+
+Eyes (equippable to base)
+  - contract address: WYUDvBeQDdQvqsc2QJ26XPKAYwyEAFQ6V1Tb7npktxesgEF
+
+Mouths (equippable to base)
+  - contract address: Zu8z2KnYUBSGCa1osS1fc6RHLyswNSbsJYn9j1d7LxXJ7jC
+
+Headwear
+  - contract address: XunBRDXaXq3dUEybAtjN9zUrkXkBSTPJJD3B5tMxuydXNfr
+
+Farts
+  - contract address: a1CYa7Z4ZNsLqB6mJGZwm2hTmMW55xaAMbR11tyHcJ31Ryy
 
 
-
+Old deployment, not used anymore
 Base (has 4 equippable slots)
   - contract address: `Wcg8cuKcJgQGm15tZ5F14JXuWehm1Q67K92jfbTpKPrPm6S`
   - collection metadata: `ipfs://bafybeihspohvpehtgc2mkpk3jmagoff24kkabsqi4iwamfnaf7rz7r6s3e/collection.json`

@@ -172,7 +172,7 @@ export const buildCollection = async (
   // Add child tokens
   if (parentContractAddress) {
     calls = [];
-    // Generate array from 1 to maxSupply and shuffle members.
+    // Generate array from 1 to maxSupply and shuffle members so random children are assigned to parent.
     const shuffledTokenIds = Array.from(
       { length: configuration.maxSupply },
       (_, index) => index + 1
@@ -319,10 +319,10 @@ const run = async (): Promise<void> => {
   // Base contract
   const baseAddress = await buildCollection('../collections/starduster/');
   // Child contracts
-  await buildCollection('../collections/starduster-eyes/', baseAddress);
-  await buildCollection('../collections/starduster-mouths/', baseAddress);
-  await buildCollection('../collections/starduster-headwear/', baseAddress);
-  await buildCollection('../collections/starduster-farts/', baseAddress);
+  // await buildCollection('../collections/starduster-eyes/', baseAddress);
+  // await buildCollection('../collections/starduster-mouths/', baseAddress);
+  // await buildCollection('../collections/starduster-headwear/', baseAddress);
+  // await buildCollection('../collections/starduster-farts/', baseAddress);
   
   console.log('\nBase contract address ', baseAddress);
   process.exit(0);
