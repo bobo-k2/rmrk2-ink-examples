@@ -13,8 +13,8 @@ export interface WeightInfo {
   refTime: bigint;
 }
 
-// const WSS_ENDPOINT = 'ws://localhost:9944';
-const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
+const WSS_ENDPOINT = 'ws://localhost:9944';
+// const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 let api: ApiPromise;
 
@@ -179,31 +179,30 @@ export const executeCalls = async (
   const batches: SubmittableExtrinsic<'promise', ISubmittableResult>[][] = [];
   // Create batch of batches, each batch to use about a half of max block weight.
   const refTime = gasLimit.refTime.toBigInt() / BigInt(2);
-  const proofSize = gasLimit.proofSize.toBigInt() / BigInt(2);
+  const proofSize = gasLimit.proofSize.toBigInt() / BigInt(2)
   let currentRefTime = BigInt(0);
   let currentProofSize = BigInt(0);
-  let currentBatch: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
+  let currentBatch:SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
-  for (const call of calls) {
+  for(const call of calls) {
+    if(currentRefTime > refTime || currentProofSize > proofSize) {
+      batches.push(currentBatch);
+      currentBatch = [];
+      currentProofSize = BigInt(0);
+      currentRefTime = BigInt(0);
+    }
+
     const paymentInfo = await call.paymentInfo(signer.address);
     currentProofSize += paymentInfo.weight.proofSize.toBigInt();
     currentRefTime += paymentInfo.weight.refTime.toBigInt();
-
-    if (currentRefTime > refTime || currentProofSize > proofSize) {
-      batches.push(currentBatch);
-      currentBatch = [];
-      currentProofSize = paymentInfo.weight.proofSize.toBigInt(); //  BigInt(0);
-      currentRefTime = paymentInfo.weight.refTime.toBigInt(); // BigInt(0);
-    }
-
     currentBatch.push(call);
   }
 
   batches.push(currentBatch);
 
-  for (let i = 0; i < batches.length; i++) {
+  for(let i = 0; i < batches.length; i++ ) {
     const batch = batches[i];
-    console.log(`Executing batch ${i + 1} / ${batches.length}`);
+    console.log(`Executing batch ${ i+1 } / ${ batches.length }`)
     await new Promise((resolve) => {
       api.tx.utility
         .batchAll(batch)

@@ -6,7 +6,7 @@
   "baseUri": "ipfs://bafybeicvg2id6zikmy3p6kc62i7yesjzhfm32pnixxmccyy7gl7anyt6nu",
   "collectionMetadataUri": "ipfs://bafkreig6ntjkpmrsgsavrf3qtofrofpzngtfmdy7lxxicpblqldkuqqune",
   "collectionImagesUri": "ipfs://bafybeieofckupsgw4rh4ijp2s6mdboavmqefav5shrl2nbythwpk7wc7nq",
-  "maxSupply": 20, 
+  "maxSupply": 100, 
   "pricePerMint": "1000000000000000000",
   "royaltyReceiverAddress": "XLoLJBQoMPHMLXYhdFobSpH5GujRoUH8d1sUtaEtoBG7zaS",
   "royalty": 1,
