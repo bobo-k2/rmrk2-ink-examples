@@ -13,8 +13,8 @@ export interface WeightInfo {
   refTime: bigint;
 }
 
-// const WSS_ENDPOINT = 'ws://localhost:9944';
-const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
+const WSS_ENDPOINT = 'ws://localhost:9944';
+// const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 let api: ApiPromise;
 
@@ -157,8 +157,6 @@ export const getCall = async (
   );
 
   if (txResult.result.isErr || txResult.result.toString().includes('Revert')) {
-    throw getErrorMessage(txResult.result.value as DispatchError);
-  } else if (txResult.result.toString().includes('Revert')) {
     throw txResult.result.value;
   }
 
@@ -222,6 +220,21 @@ export const executeCalls = async (
   }
 
   return true;
+
+  // return new Promise((resolve) => {
+  //   api.tx.utility
+  //     .batchAll(calls)
+  //     .signAndSend(signer, (result: ISubmittableResult) => {
+  //       if (result.isFinalized && !result.dispatchError) {
+  //         resolve(true);
+  //       } else if (result.isFinalized && result.dispatchError) {
+  //         console.error(getErrorMessage(result.dispatchError));
+  //         resolve(false);
+  //       } else if (result.isError) {
+  //         resolve(false);
+  //       }
+  //     });
+  // });
 };
 
 export const getBatchWeight = async (
