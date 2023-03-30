@@ -54,7 +54,7 @@ export const buildCollection = async (
   basePath: string,
   parentContractAddress: string = undefined
 ): Promise<string> => {
-  const MAX_CALL_SIZE = 50; // Max length of array passed to a contract call.
+  const MAX_CALL_SIZE = 10; // Max length of array passed to a contract call.
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
   await cryptoWaitReady();
@@ -172,7 +172,7 @@ export const buildCollection = async (
   }
 
   // Execute all add asset to token calls
-  console.log('Executing addAssetToToken');
+  console.log('Executing addAssetToManyTokens');
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
 
@@ -201,7 +201,7 @@ export const buildCollection = async (
       tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
 
       if (
-        tokenPairs.length === MAX_CALL_SIZE ||
+        tokenPairs.length === 2 ||
         i + 1 >= configuration.maxSupply
       ) {
         calls.push(
@@ -334,7 +334,7 @@ const writeTokenMetadata = (
 
 const run = async (): Promise<void> => {
   // Base contract
-  const baseAddress = await buildCollection('../collections/starduster/');
+  const baseAddress = 'YvXaB6p4wDH3LviBWHnqycaErdfKZxMvrxSb8U42hC7ZfB8'; // await buildCollection('../collections/starduster/');
   // Child contracts
   await buildCollection('../collections/starduster-eyes/', baseAddress);
   // await buildCollection('../collections/starduster-mouths/', baseAddress);
