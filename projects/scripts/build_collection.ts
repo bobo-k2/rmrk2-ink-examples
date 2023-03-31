@@ -54,7 +54,6 @@ export const buildCollection = async (
   basePath: string,
   parentContractAddress: string = undefined
 ): Promise<string> => {
-  const MAX_CALL_SIZE = 50; // Max length of array passed to a contract call.
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
   await cryptoWaitReady();
@@ -127,7 +126,11 @@ export const buildCollection = async (
     equippableSlots.push(i);
   }
 
-  for (let i = 0; i < assetsCount; i++) {
+  for (
+    let i = 0;
+    i < assetsCount;
+    i++
+  ) {
     calls.push(
       await getCall(
         contract,
@@ -147,28 +150,18 @@ export const buildCollection = async (
   console.log('Batch call executed.');
   calls = [];
 
-  for (let i = 0; i < assetsCount; i++) {
-    let tokens = [];
-    for (let j = i; j < configuration.maxSupply; j += assetsCount) {
-      tokens.push({ u64: j + 1 });
-
-      if (
-        tokens.length === MAX_CALL_SIZE ||
-        j + assetsCount >= configuration.maxSupply
-      ) {
-        calls.push(
-          await getCall(
-            contract,
-            'multiAsset::addAssetToManyTokens',
-            signer,
-            tokens, // Token Ids array
-            (i + 1).toString() // Asset Id
-          )
-        );
-
-        tokens = [];
-      }
-    }
+  // Add assets to a token
+  for (let i = 0; i < configuration.maxSupply; i++) {
+    calls.push(
+      await getCall(
+        contract,
+        'multiAsset::addAssetToToken',
+        signer,
+        { u64: i + 1 }, // Token Id
+        ((i % assetsCount) + 1).toString(), // Asset Id
+        null
+      )
+    );
   }
 
   // Execute all add asset to token calls
@@ -196,26 +189,16 @@ export const buildCollection = async (
     );
 
     const parentContract = await getContract(parentContractAddress);
-    let tokenPairs = [];
     for (let i = 0; i < configuration.maxSupply; i++) {
-      tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
-
-      if (
-        tokenPairs.length === MAX_CALL_SIZE ||
-        i + 1 >= configuration.maxSupply
-      ) {
-        calls.push(
-          await getCall(
-            parentContract,
-            'nesting::addManyChildren',
-            signer,
-            contractAddress,
-            tokenPairs
-          )
-        );
-
-        tokenPairs = [];
-      }
+      calls.push(
+        await getCall(
+          parentContract,
+          'nesting::addChild',
+          signer,
+          { u64: i + 1 }, // Parent token Id
+          [contractAddress, { u64: shuffledTokenIds[i] }]
+        )
+      );
     }
 
     console.log('Executing addChild batch');
@@ -337,12 +320,13 @@ const run = async (): Promise<void> => {
   const baseAddress = await buildCollection('../collections/starduster/');
   // Child contracts
   await buildCollection('../collections/starduster-eyes/', baseAddress);
-  // await buildCollection('../collections/starduster-mouths/', baseAddress);
-  // await buildCollection('../collections/starduster-headwear/', baseAddress);
-  // await buildCollection('../collections/starduster-farts/', baseAddress);
-
+  await buildCollection('../collections/starduster-mouths/', baseAddress);
+  await buildCollection('../collections/starduster-headwear/', baseAddress);
+  await buildCollection('../collections/starduster-farts/', baseAddress);
+  
   console.log('\nBase contract address ', baseAddress);
   process.exit(0);
 };
 
 run();
+
