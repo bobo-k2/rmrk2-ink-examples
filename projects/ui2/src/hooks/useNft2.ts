@@ -2,7 +2,7 @@ import { compile, ref } from "vue";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { sanitizeIpfsUrl } from "../../../scripts/common";
 import { getSigner, getTypedContract } from "../../../scripts/common_api";
-import { ALICE_URI } from "../../../scripts/consts";
+import { ALICE_URI } from "../../../scripts/secret";
 import { hex2ascii } from "../../../scripts/read_token";
 import { PartType } from "../../../scripts/typed_contracts/types-returns/rmrk_contract";
 

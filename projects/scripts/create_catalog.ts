@@ -1,6 +1,7 @@
 import { Codec } from '@polkadot/types-codec/types';
-import { ALICE_URI, CHUNKY_PARTS_ADDRESS } from './consts';
+import { CHUNKY_PARTS_ADDRESS } from './consts';
 import { executeCall, getContract, getSigner } from './common_api';
+import { ALICE_URI } from './secret';
 
 const storageDepositLimit = null;
 const ASSETS_CID = 'QmYWZcsozjhM9CKJX4K83tMLN1G9QKW8TcGuVjdkLfwAaL';

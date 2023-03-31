@@ -6,7 +6,7 @@ import {
   deployChunkyPartsContract,
 } from './deploy_contracts';
 import { getSigner } from './common_api';
-import { ALICE_URI } from './consts';
+import { ALICE_URI } from './secret';
 import { buildToken } from './build_token';
 import { mintTokenParts } from './mint_token_parts';
 

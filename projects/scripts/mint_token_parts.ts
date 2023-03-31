@@ -1,4 +1,5 @@
-import { ALICE_URI, BOB_URI, PRICE_PER_MINT } from './consts';
+import { PRICE_PER_MINT } from './consts';
+import { ALICE_URI, BOB_URI } from './secret';
 import {
   executeCall,
   executeCallWithValue,

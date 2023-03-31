@@ -6,7 +6,7 @@
 // TODO requires heavy refactoring.
 
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { ALICE_URI, BOB_URI } from './consts';
+import { ALICE_URI, BOB_URI } from './secret';
 import {
   executeCall,
   getApi,

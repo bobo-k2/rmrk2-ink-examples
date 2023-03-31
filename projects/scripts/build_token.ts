@@ -6,12 +6,12 @@ import {
   getSigner,
 } from './common_api';
 import {
-  ALICE_URI,
-  BOB_URI,
   CHUNKY_ADDRESS,
   CHUNKY_PARTS_ADDRESS,
   PRICE_PER_MINT,
 } from './consts';
+
+import { ALICE_URI, BOB_URI } from './secret';
 
 /**
  * Builds multi asset equippable Chunky NFT. Based on:

@@ -40,7 +40,7 @@ import {
   getContract,
   getSigner,
 } from './common_api';
-import { ALICE_URI } from './consts';
+import { ALICE_URI } from './secret';
 
 /**
  * Builds a RMRK NFT collection.

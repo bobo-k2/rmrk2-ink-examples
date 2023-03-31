@@ -3,8 +3,8 @@ import { CodePromise } from '@polkadot/api-contract';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { WeightV2 } from '@polkadot/types/interfaces';
-import { doubleGasLimit, getApi, getGasLimit, getSigner } from './common_api';
-import { ALICE_URI } from './consts';
+import { getApi, getSigner } from './common_api';
+import { ALICE_URI } from './secret'; // Send as deploy contract call parameter
 import Files from 'fs';
 
 export const deployRmrkContract = async (
