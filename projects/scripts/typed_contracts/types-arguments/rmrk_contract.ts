@@ -136,10 +136,12 @@ export enum RmrkError {
 	assetHasNoParts = 'AssetHasNoParts',
 	assetIdAlreadyExists = 'AssetIdAlreadyExists',
 	assetIdNotFound = 'AssetIdNotFound',
+	assetIdNotEquippable = 'AssetIdNotEquippable',
 	badConfig = 'BadConfig',
 	badMintValue = 'BadMintValue',
 	badPriorityLength = 'BadPriorityLength',
 	cannotMintZeroTokens = 'CannotMintZeroTokens',
+	catalogNotFoundForAsset = 'CatalogNotFoundForAsset',
 	childNotFound = 'ChildNotFound',
 	uriNotFound = 'UriNotFound',
 	collectionIsFull = 'CollectionIsFull',
@@ -165,20 +167,6 @@ export type Asset = {
 	equippableGroupId: (number | string | BN),
 	assetUri: Array<(number | string | BN)>,
 	partIds: Array<(number | string | BN)>
-}
-
-export type Part = {
-	partType: PartType,
-	z: (number | string | BN),
-	equippable: Array<AccountId>,
-	partUri: Array<(number | string | BN)>,
-	isEquippableByAll: boolean
-}
-
-export enum PartType {
-	none = 'None',
-	slot = 'Slot',
-	fixed = 'Fixed'
 }
 
 export type Equipment = {

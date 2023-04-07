@@ -5,7 +5,7 @@ import type {ApiPromise} from "@polkadot/api";
 import {_genValidGasLimitAndValue, _signAndSend, SignAndSendSuccessResponse} from "@727-ventures/typechain-types";
 import type {ConstructorOptions} from "@727-ventures/typechain-types";
 import type {WeightV2} from "@polkadot/types/interfaces";
-import type * as ArgumentTypes from '../types-arguments/rmrk_contract';
+import type * as ArgumentTypes from '../types-arguments/catalog_contract';
 import type BN from 'bn.js';
 
 export default class Constructors {
@@ -23,32 +23,18 @@ export default class Constructors {
 	/**
 	* new
 	*
-	* @param { Array<(number | string | BN)> } name,
-	* @param { Array<(number | string | BN)> } symbol,
-	* @param { Array<(number | string | BN)> } baseUri,
-	* @param { (number | string | BN) | null } maxSupply,
-	* @param { (string | number | BN) } pricePerMint,
-	* @param { Array<(number | string | BN)> } collectionMetadata,
-	* @param { ArgumentTypes.AccountId } royaltyReceiver,
-	* @param { (number | string | BN) } royalty,
+	* @param { Array<(number | string | BN)> } catalogMetadata,
 	*/
    	async "new" (
-		name: Array<(number | string | BN)>,
-		symbol: Array<(number | string | BN)>,
-		baseUri: Array<(number | string | BN)>,
-		maxSupply: (number | string | BN) | null,
-		pricePerMint: (string | number | BN),
-		collectionMetadata: Array<(number | string | BN)>,
-		royaltyReceiver: ArgumentTypes.AccountId,
-		royalty: (number | string | BN),
+		catalogMetadata: Array<(number | string | BN)>,
 		__options ? : ConstructorOptions,
    	) {
-   		const __contract = JSON.parse(Files.readFileSync("./../contract/rmrk_contract.contract").toString());
+   		const __contract = JSON.parse(Files.readFileSync("./../contract/catalog_contract.contract").toString());
 		const code = new CodePromise(this.nativeAPI, __contract, __contract.source.wasm);
 		const gasLimit = (await _genValidGasLimitAndValue(this.nativeAPI, __options)).gasLimit as WeightV2;
 
 		const storageDepositLimit = __options?.storageDepositLimit;
-			const tx = code.tx["new"]!({ gasLimit, storageDepositLimit, value: __options?.value }, name, symbol, baseUri, maxSupply, pricePerMint, collectionMetadata, royaltyReceiver, royalty);
+			const tx = code.tx["new"]!({ gasLimit, storageDepositLimit, value: __options?.value }, catalogMetadata);
 			let response;
 
 			try {

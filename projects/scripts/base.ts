@@ -21,6 +21,7 @@ export interface CollectionConfiguration {
   description: string;
   symbol: string;
   baseUri: string;
+  catalogMetadataUri: string;
   collectionMetadataUri: string;
   collectionImagesUri: string;
   maxSupply: number;

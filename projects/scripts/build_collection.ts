@@ -41,6 +41,8 @@ import {
   getSigner,
 } from './common_api';
 import { ALICE_URI } from './secret';
+import { loadConfiguration } from './build_common';
+import { buildCatalog } from './build_catalog';
 
 /**
  * Builds a RMRK NFT collection.
@@ -64,9 +66,10 @@ export const buildCollection = async (
   console.debug(configuration);
 
   let contractAddress = configuration.contractAddress;
-  // Deploy a new contract
+  // Deploy a new RMRK contract
   if (configuration.baseUri && !configuration.contractAddress) {
     contractAddress = await deployRmrkContract(
+      signer,
       configuration.name,
       configuration.symbol,
       configuration.baseUri,
@@ -83,12 +86,13 @@ export const buildCollection = async (
   }
 
   // Create catalog.
-  const catalog = await createCatalog(
-    contractAddress,
-    configuration.numberOfEquippableSlots,
-    basePath,
-    configuration.collectionImagesUri
-  );
+  // const catalog = await createCatalog(
+  //   contractAddress,
+  //   configuration.numberOfEquippableSlots,
+  //   basePath,
+  //   configuration.collectionImagesUri
+  // );
+  const { catalog } = await buildCatalog(basePath);
 
   // Write metadata.
   if (!configuration.baseUri) {
@@ -126,11 +130,7 @@ export const buildCollection = async (
     equippableSlots.push(i);
   }
 
-  for (
-    let i = 0;
-    i < assetsCount;
-    i++
-  ) {
+  for (let i = 0; i < assetsCount; i++) {
     calls.push(
       await getCall(
         contract,
@@ -210,76 +210,67 @@ export const buildCollection = async (
   return contractAddress;
 };
 
-/**
- * Creates a NFT catalog from a directory structure.
- * Catalog files are organized in subfolders under imagesPath folder.
- * Files that belongs to the same layer should be stored in the same folder. Folder name should be something like z_something,
- * where z is z index.
- * @param contractAddress NFT contract address
- * @param numberOfSlots Number of equippable slots to create
- * @param assetsPath Path to the folder with images organized in subfolders.
- * @param imagesUri CID of imagesPath folder deployed on IPFS.
- * @returns IBasePart[]
- */
-export const createCatalog = async (
-  contractAddress: string,
-  numberOfSlots: number,
-  basePath: string,
-  imagesUri: string
-): Promise<IBasePart[]> => {
-  const result: IBasePart[] = [];
-  const fixedParts: number[] = [];
-  const assetsPath = `${basePath}assets`;
+// /**
+//  * Creates a NFT catalog from a directory structure.
+//  * Catalog files are organized in subfolders under imagesPath folder.
+//  * Files that belongs to the same layer should be stored in the same folder. Folder name should be something like z_something,
+//  * where z is z index.
+//  * @param contractAddress NFT contract address
+//  * @param numberOfSlots Number of equippable slots to create
+//  * @param assetsPath Path to the folder with images organized in subfolders.
+//  * @param imagesUri CID of imagesPath folder deployed on IPFS.
+//  * @returns IBasePart[]
+//  */
+// export const createCatalog = async (
+//   contractAddress: string,
+//   numberOfSlots: number,
+//   basePath: string,
+//   imagesUri: string
+// ): Promise<IBasePart[]> => {
+//   const result: IBasePart[] = [];
+//   const fixedParts: number[] = [];
+//   const assetsPath = `${basePath}assets`;
 
-  console.log('Creating a catalog');
-  // Create fixed parts.
-  // TODO see how to exclude hidden files (e.g. .DS_Store)
-  const folders = fs
-    .readdirSync(assetsPath, { withFileTypes: true })
-    .filter((x) => x.isDirectory() && x.name !== '.DS_Store')
-    .map((x) => x.name);
+//   console.log('Creating a catalog');
+//   // Create fixed parts.
+//   // TODO see how to exclude hidden files (e.g. .DS_Store)
+//   const folders = fs
+//     .readdirSync(assetsPath, { withFileTypes: true })
+//     .filter((x) => x.isDirectory() && x.name !== '.DS_Store')
+//     .map((x) => x.name);
 
-  for (let folder of folders) {
-    const z = parseInt(folder.split('_')[0]);
-    fixedParts.push(z);
-    const files = await fs.promises.readdir(`${assetsPath}/${folder}`);
-    for (let file of files.filter((x) => x !== '.DS_Store')) {
-      result.push({
-        partType: 'Fixed',
-        partUri: `${imagesUri}/${folder}/${file}`,
-        z,
-      });
-    }
-  }
+//   for (let folder of folders) {
+//     const z = parseInt(folder.split('_')[0]);
+//     fixedParts.push(z);
+//     const files = await fs.promises.readdir(`${assetsPath}/${folder}`);
+//     for (let file of files.filter((x) => x !== '.DS_Store')) {
+//       result.push({
+//         partType: 'Fixed',
+//         partUri: `${imagesUri}/${folder}/${file}`,
+//         z,
+//       });
+//     }
+//   }
 
-  // Create slots. Assumption, slots z order fills holes between fixed parts z indices.
-  let slotsAdded = 0;
-  for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
-    if (slotsAdded >= numberOfSlots) {
-      break;
-    }
+//   // Create slots. Assumption, slots z order fills holes between fixed parts z indices.
+//   let slotsAdded = 0;
+//   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
+//     if (slotsAdded >= numberOfSlots) {
+//       break;
+//     }
 
-    if (fixedParts.indexOf(i) === -1) {
-      result.push({
-        partType: 'Slot',
-        equippable: [contractAddress],
-        z: i,
-      });
-      slotsAdded++;
-    }
-  }
+//     if (fixedParts.indexOf(i) === -1) {
+//       result.push({
+//         partType: 'Slot',
+//         equippable: [contractAddress],
+//         z: i,
+//       });
+//       slotsAdded++;
+//     }
+//   }
 
-  return result;
-};
-
-const loadConfiguration = (assetsPath: string): CollectionConfiguration => {
-  console.log(`Loading collection configuration from ${assetsPath}`);
-  const config = JSON.parse(
-    fs.readFileSync(`${assetsPath}configuration.json`, 'utf-8')
-  );
-
-  return <CollectionConfiguration>config;
-};
+//   return result;
+// };
 
 const writeTokenMetadata = (
   basePath: string,
@@ -323,10 +314,9 @@ const run = async (): Promise<void> => {
   await buildCollection('../collections/starduster-mouths/', baseAddress);
   await buildCollection('../collections/starduster-headwear/', baseAddress);
   await buildCollection('../collections/starduster-farts/', baseAddress);
-  
+
   console.log('\nBase contract address ', baseAddress);
   process.exit(0);
 };
 
 run();
-
