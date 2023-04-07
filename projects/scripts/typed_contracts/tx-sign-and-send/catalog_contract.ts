@@ -28,55 +28,19 @@ export default class Methods {
 	}
 
 	/**
-	* getCatalogMetadata
-	*
-	*/
-	"getCatalogMetadata" (
-		__options ? : GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::getCatalogMetadata", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [], __options);
-	}
-
-	/**
-	* resetEquippableAddresses
+	* addEquippableAddresses
 	*
 	* @param { (number | string | BN) } partId,
+	* @param { Array<ArgumentTypes.AccountId> } equippableAddress,
 	*/
-	"resetEquippableAddresses" (
+	"addEquippableAddresses" (
 		partId: (number | string | BN),
+		equippableAddress: Array<ArgumentTypes.AccountId>,
 		__options ? : GasLimit,
 	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::resetEquippableAddresses", (events: EventRecord) => {
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::addEquippableAddresses", (events: EventRecord) => {
 			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [partId], __options);
-	}
-
-	/**
-	* setEquippableByAll
-	*
-	* @param { (number | string | BN) } partId,
-	*/
-	"setEquippableByAll" (
-		partId: (number | string | BN),
-		__options ? : GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setEquippableByAll", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [partId], __options);
-	}
-
-	/**
-	* getPartsCount
-	*
-	*/
-	"getPartsCount" (
-		__options ? : GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::getPartsCount", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [], __options);
+		}, [partId, equippableAddress], __options);
 	}
 
 	/**
@@ -94,17 +58,31 @@ export default class Methods {
 	}
 
 	/**
-	* setupCatalog
+	* isEquippableByAll
 	*
-	* @param { Array<(number | string | BN)> } catalogMetadata,
+	* @param { (number | string | BN) } partId,
 	*/
-	"setupCatalog" (
-		catalogMetadata: Array<(number | string | BN)>,
+	"isEquippableByAll" (
+		partId: (number | string | BN),
 		__options ? : GasLimit,
 	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setupCatalog", (events: EventRecord) => {
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::isEquippableByAll", (events: EventRecord) => {
 			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [catalogMetadata], __options);
+		}, [partId], __options);
+	}
+
+	/**
+	* resetEquippableAddresses
+	*
+	* @param { (number | string | BN) } partId,
+	*/
+	"resetEquippableAddresses" (
+		partId: (number | string | BN),
+		__options ? : GasLimit,
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::resetEquippableAddresses", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [partId], __options);
 	}
 
 	/**
@@ -122,33 +100,15 @@ export default class Methods {
 	}
 
 	/**
-	* addEquippableAddresses
+	* getPartsCount
 	*
-	* @param { (number | string | BN) } partId,
-	* @param { Array<ArgumentTypes.AccountId> } equippableAddress,
 	*/
-	"addEquippableAddresses" (
-		partId: (number | string | BN),
-		equippableAddress: Array<ArgumentTypes.AccountId>,
+	"getPartsCount" (
 		__options ? : GasLimit,
 	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::addEquippableAddresses", (events: EventRecord) => {
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::getPartsCount", (events: EventRecord) => {
 			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [partId, equippableAddress], __options);
-	}
-
-	/**
-	* isEquippableByAll
-	*
-	* @param { (number | string | BN) } partId,
-	*/
-	"isEquippableByAll" (
-		partId: (number | string | BN),
-		__options ? : GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::isEquippableByAll", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [partId], __options);
+		}, [], __options);
 	}
 
 	/**
@@ -165,6 +125,46 @@ export default class Methods {
 		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::ensureEquippable", (events: EventRecord) => {
 			return decodeEvents(events, this.__nativeContract, "catalog_contract");
 		}, [partId, targetAddress], __options);
+	}
+
+	/**
+	* setEquippableByAll
+	*
+	* @param { (number | string | BN) } partId,
+	*/
+	"setEquippableByAll" (
+		partId: (number | string | BN),
+		__options ? : GasLimit,
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setEquippableByAll", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [partId], __options);
+	}
+
+	/**
+	* getCatalogMetadata
+	*
+	*/
+	"getCatalogMetadata" (
+		__options ? : GasLimit,
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::getCatalogMetadata", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [], __options);
+	}
+
+	/**
+	* setupCatalog
+	*
+	* @param { Array<(number | string | BN)> } catalogMetadata,
+	*/
+	"setupCatalog" (
+		catalogMetadata: Array<(number | string | BN)>,
+		__options ? : GasLimit,
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setupCatalog", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [catalogMetadata], __options);
 	}
 
 }

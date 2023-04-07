@@ -36,14 +36,46 @@ export default class Methods {
 	}
 
 	/**
-	* getCatalogMetadata
+	* addEquippableAddresses
 	*
-	* @returns { Result<string, ReturnTypes.LangError> }
+	* @param { (number | string | BN) } partId,
+	* @param { Array<ArgumentTypes.AccountId> } equippableAddress,
+	* @returns { void }
 	*/
-	"getCatalogMetadata" (
+	"addEquippableAddresses" (
+		partId: (number | string | BN),
+		equippableAddress: Array<ArgumentTypes.AccountId>,
 		__options: GasLimit,
-	): Promise< QueryReturnType< Result<string, ReturnTypes.LangError> > >{
-		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::getCatalogMetadata", [], __options, (result) => { return handleReturnType(result, getTypeDescription(11, 'catalog_contract')); });
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::addEquippableAddresses", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [partId, equippableAddress], __options);
+	}
+
+	/**
+	* getPart
+	*
+	* @param { (number | string | BN) } partId,
+	* @returns { Result<ReturnTypes.Part | null, ReturnTypes.LangError> }
+	*/
+	"getPart" (
+		partId: (number | string | BN),
+		__options: GasLimit,
+	): Promise< QueryReturnType< Result<ReturnTypes.Part | null, ReturnTypes.LangError> > >{
+		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::getPart", [partId], __options, (result) => { return handleReturnType(result, getTypeDescription(18, 'catalog_contract')); });
+	}
+
+	/**
+	* isEquippableByAll
+	*
+	* @param { (number | string | BN) } partId,
+	* @returns { Result<boolean, ReturnTypes.LangError> }
+	*/
+	"isEquippableByAll" (
+		partId: (number | string | BN),
+		__options: GasLimit,
+	): Promise< QueryReturnType< Result<boolean, ReturnTypes.LangError> > >{
+		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::isEquippableByAll", [partId], __options, (result) => { return handleReturnType(result, getTypeDescription(22, 'catalog_contract')); });
 	}
 
 	/**
@@ -62,60 +94,6 @@ export default class Methods {
 	}
 
 	/**
-	* setEquippableByAll
-	*
-	* @param { (number | string | BN) } partId,
-	* @returns { void }
-	*/
-	"setEquippableByAll" (
-		partId: (number | string | BN),
-		__options: GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setEquippableByAll", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [partId], __options);
-	}
-
-	/**
-	* getPartsCount
-	*
-	* @returns { Result<number, ReturnTypes.LangError> }
-	*/
-	"getPartsCount" (
-		__options: GasLimit,
-	): Promise< QueryReturnType< Result<number, ReturnTypes.LangError> > >{
-		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::getPartsCount", [], __options, (result) => { return handleReturnType(result, getTypeDescription(20, 'catalog_contract')); });
-	}
-
-	/**
-	* getPart
-	*
-	* @param { (number | string | BN) } partId,
-	* @returns { Result<ReturnTypes.Part | null, ReturnTypes.LangError> }
-	*/
-	"getPart" (
-		partId: (number | string | BN),
-		__options: GasLimit,
-	): Promise< QueryReturnType< Result<ReturnTypes.Part | null, ReturnTypes.LangError> > >{
-		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::getPart", [partId], __options, (result) => { return handleReturnType(result, getTypeDescription(21, 'catalog_contract')); });
-	}
-
-	/**
-	* setupCatalog
-	*
-	* @param { Array<(number | string | BN)> } catalogMetadata,
-	* @returns { void }
-	*/
-	"setupCatalog" (
-		catalogMetadata: Array<(number | string | BN)>,
-		__options: GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setupCatalog", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [catalogMetadata], __options);
-	}
-
-	/**
 	* addPartList
 	*
 	* @param { Array<ArgumentTypes.Part> } parts,
@@ -131,33 +109,14 @@ export default class Methods {
 	}
 
 	/**
-	* addEquippableAddresses
+	* getPartsCount
 	*
-	* @param { (number | string | BN) } partId,
-	* @param { Array<ArgumentTypes.AccountId> } equippableAddress,
-	* @returns { void }
+	* @returns { Result<number, ReturnTypes.LangError> }
 	*/
-	"addEquippableAddresses" (
-		partId: (number | string | BN),
-		equippableAddress: Array<ArgumentTypes.AccountId>,
+	"getPartsCount" (
 		__options: GasLimit,
-	){
-		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::addEquippableAddresses", (events: EventRecord) => {
-			return decodeEvents(events, this.__nativeContract, "catalog_contract");
-		}, [partId, equippableAddress], __options);
-	}
-
-	/**
-	* isEquippableByAll
-	*
-	* @param { (number | string | BN) } partId,
-	* @returns { Result<boolean, ReturnTypes.LangError> }
-	*/
-	"isEquippableByAll" (
-		partId: (number | string | BN),
-		__options: GasLimit,
-	): Promise< QueryReturnType< Result<boolean, ReturnTypes.LangError> > >{
-		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::isEquippableByAll", [partId], __options, (result) => { return handleReturnType(result, getTypeDescription(26, 'catalog_contract')); });
+	): Promise< QueryReturnType< Result<number, ReturnTypes.LangError> > >{
+		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::getPartsCount", [], __options, (result) => { return handleReturnType(result, getTypeDescription(24, 'catalog_contract')); });
 	}
 
 	/**
@@ -172,7 +131,48 @@ export default class Methods {
 		targetAddress: ArgumentTypes.AccountId,
 		__options: GasLimit,
 	): Promise< QueryReturnType< Result<Result<null, ReturnTypes.Error>, ReturnTypes.LangError> > >{
-		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::ensureEquippable", [partId, targetAddress], __options, (result) => { return handleReturnType(result, getTypeDescription(13, 'catalog_contract')); });
+		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::ensureEquippable", [partId, targetAddress], __options, (result) => { return handleReturnType(result, getTypeDescription(11, 'catalog_contract')); });
+	}
+
+	/**
+	* setEquippableByAll
+	*
+	* @param { (number | string | BN) } partId,
+	* @returns { void }
+	*/
+	"setEquippableByAll" (
+		partId: (number | string | BN),
+		__options: GasLimit,
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setEquippableByAll", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [partId], __options);
+	}
+
+	/**
+	* getCatalogMetadata
+	*
+	* @returns { Result<string, ReturnTypes.LangError> }
+	*/
+	"getCatalogMetadata" (
+		__options: GasLimit,
+	): Promise< QueryReturnType< Result<string, ReturnTypes.LangError> > >{
+		return queryOkJSON( this.__apiPromise, this.__nativeContract, this.__callerAddress, "catalog::getCatalogMetadata", [], __options, (result) => { return handleReturnType(result, getTypeDescription(25, 'catalog_contract')); });
+	}
+
+	/**
+	* setupCatalog
+	*
+	* @param { Array<(number | string | BN)> } catalogMetadata,
+	* @returns { void }
+	*/
+	"setupCatalog" (
+		catalogMetadata: Array<(number | string | BN)>,
+		__options: GasLimit,
+	){
+		return txSignAndSend( this.__apiPromise, this.__nativeContract, this.__keyringPair, "catalog::setupCatalog", (events: EventRecord) => {
+			return decodeEvents(events, this.__nativeContract, "catalog_contract");
+		}, [catalogMetadata], __options);
 	}
 
 }

@@ -32,7 +32,7 @@ export const deployRmrkContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: null,
+      storageDepositLimit: BigInt('100000000000000000000'),
     },
     name,
     symbol,
@@ -44,18 +44,7 @@ export const deployRmrkContract = async (
     royalty
   );
 
-  // return await signAndSend(tx, alice); 
-  return new Promise(async (resolve, reject) => {
-    await tx.signAndSend(signer, (result: CodeSubmittableResult<'promise'>) => {
-      if (result.isFinalized && !result.dispatchError) {
-        resolve(result.contract.address.toHuman());
-      } else if (result.isFinalized && result.dispatchError) {
-        reject(result.dispatchError.toHuman());
-      } else if (result.isError) {
-        reject(result.toHuman());
-      }
-    });
-  });
+  return await signAndSend(tx, signer); 
 };
 
 export const deployCatalogContract = async (
@@ -74,7 +63,7 @@ export const deployCatalogContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: null,
+      storageDepositLimit: BigInt('100000000000000000000'),
     },
     catalogMetadataUri
   );

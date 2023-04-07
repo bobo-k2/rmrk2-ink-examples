@@ -1,6 +1,6 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { ALICE_URI } from './secret';
-import { getSigner } from './common_api';
+import { executeCall, getCatalogContract, getSigner } from './common_api';
 import { loadConfiguration } from './build_common';
 import { deployCatalogContract } from './deploy_contracts';
 import { IBasePart } from 'create_catalog';
@@ -26,11 +26,13 @@ export const buildCatalog = async (basePath: string): Promise<Catalog> => {
 
   // Create catalog.
   const catalog = await createCatalog(
-    contractAddress,
     configuration.numberOfEquippableSlots,
     basePath,
     configuration.collectionImagesUri
   );
+
+  const contract = await getCatalogContract(contractAddress);
+  await executeCall(contract, 'catalog::addPartList', signer, catalog);
 
   return { contractAddress, catalog };
 };
@@ -47,7 +49,6 @@ export const buildCatalog = async (basePath: string): Promise<Catalog> => {
  * @returns IBasePart[]
  */
 const createCatalog = async (
-  contractAddress: string,
   numberOfSlots: number,
   basePath: string,
   imagesUri: string
@@ -87,7 +88,7 @@ const createCatalog = async (
     if (fixedParts.indexOf(i) === -1) {
       result.push({
         partType: 'Slot',
-        equippable: [contractAddress],
+        equippable: [],
         z: i,
       });
       slotsAdded++;
@@ -105,4 +106,4 @@ const run = async (): Promise<void> => {
   process.exit(0);
 };
 
-run();
+// run();

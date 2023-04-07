@@ -21,47 +21,17 @@ export default class Methods {
 		this.__apiPromise = apiPromise;
 	}
 	/**
-	 * getCatalogMetadata
-	 *
-	*/
-	"getCatalogMetadata" (
-		__options: GasLimit,
-	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::getCatalogMetadata", [], __options);
-	}
-
-	/**
-	 * resetEquippableAddresses
+	 * addEquippableAddresses
 	 *
 	 * @param { (number | string | BN) } partId,
+	 * @param { Array<ArgumentTypes.AccountId> } equippableAddress,
 	*/
-	"resetEquippableAddresses" (
+	"addEquippableAddresses" (
 		partId: (number | string | BN),
+		equippableAddress: Array<ArgumentTypes.AccountId>,
 		__options: GasLimit,
 	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::resetEquippableAddresses", [partId], __options);
-	}
-
-	/**
-	 * setEquippableByAll
-	 *
-	 * @param { (number | string | BN) } partId,
-	*/
-	"setEquippableByAll" (
-		partId: (number | string | BN),
-		__options: GasLimit,
-	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::setEquippableByAll", [partId], __options);
-	}
-
-	/**
-	 * getPartsCount
-	 *
-	*/
-	"getPartsCount" (
-		__options: GasLimit,
-	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::getPartsCount", [], __options);
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::addEquippableAddresses", [partId, equippableAddress], __options);
 	}
 
 	/**
@@ -77,15 +47,27 @@ export default class Methods {
 	}
 
 	/**
-	 * setupCatalog
+	 * isEquippableByAll
 	 *
-	 * @param { Array<(number | string | BN)> } catalogMetadata,
+	 * @param { (number | string | BN) } partId,
 	*/
-	"setupCatalog" (
-		catalogMetadata: Array<(number | string | BN)>,
+	"isEquippableByAll" (
+		partId: (number | string | BN),
 		__options: GasLimit,
 	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::setupCatalog", [catalogMetadata], __options);
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::isEquippableByAll", [partId], __options);
+	}
+
+	/**
+	 * resetEquippableAddresses
+	 *
+	 * @param { (number | string | BN) } partId,
+	*/
+	"resetEquippableAddresses" (
+		partId: (number | string | BN),
+		__options: GasLimit,
+	){
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::resetEquippableAddresses", [partId], __options);
 	}
 
 	/**
@@ -101,29 +83,13 @@ export default class Methods {
 	}
 
 	/**
-	 * addEquippableAddresses
+	 * getPartsCount
 	 *
-	 * @param { (number | string | BN) } partId,
-	 * @param { Array<ArgumentTypes.AccountId> } equippableAddress,
 	*/
-	"addEquippableAddresses" (
-		partId: (number | string | BN),
-		equippableAddress: Array<ArgumentTypes.AccountId>,
+	"getPartsCount" (
 		__options: GasLimit,
 	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::addEquippableAddresses", [partId, equippableAddress], __options);
-	}
-
-	/**
-	 * isEquippableByAll
-	 *
-	 * @param { (number | string | BN) } partId,
-	*/
-	"isEquippableByAll" (
-		partId: (number | string | BN),
-		__options: GasLimit,
-	){
-		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::isEquippableByAll", [partId], __options);
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::getPartsCount", [], __options);
 	}
 
 	/**
@@ -138,6 +104,40 @@ export default class Methods {
 		__options: GasLimit,
 	){
 		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::ensureEquippable", [partId, targetAddress], __options);
+	}
+
+	/**
+	 * setEquippableByAll
+	 *
+	 * @param { (number | string | BN) } partId,
+	*/
+	"setEquippableByAll" (
+		partId: (number | string | BN),
+		__options: GasLimit,
+	){
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::setEquippableByAll", [partId], __options);
+	}
+
+	/**
+	 * getCatalogMetadata
+	 *
+	*/
+	"getCatalogMetadata" (
+		__options: GasLimit,
+	){
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::getCatalogMetadata", [], __options);
+	}
+
+	/**
+	 * setupCatalog
+	 *
+	 * @param { Array<(number | string | BN)> } catalogMetadata,
+	*/
+	"setupCatalog" (
+		catalogMetadata: Array<(number | string | BN)>,
+		__options: GasLimit,
+	){
+		return buildSubmittableExtrinsic( this.__apiPromise, this.__nativeContract, "catalog::setupCatalog", [catalogMetadata], __options);
 	}
 
 }
