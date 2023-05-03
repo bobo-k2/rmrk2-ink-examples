@@ -14,7 +14,7 @@ export interface WeightInfo {
   refTime: bigint;
 }
 
-const WSS_ENDPOINT = 'ws://localhost:9944';
+const WSS_ENDPOINT = 'ws://127.0.0.1:9944';
 // const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 let api: ApiPromise;
