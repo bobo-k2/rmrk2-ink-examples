@@ -41,6 +41,8 @@ import {
   getSigner,
 } from './common_api';
 import { ALICE_URI } from './secret';
+import { loadConfiguration } from './build_common';
+import { buildCatalog } from './build_catalog';
 
 /**
  * Builds a RMRK NFT collection.
@@ -64,9 +66,10 @@ export const buildCollection = async (
   console.debug(configuration);
 
   let contractAddress = configuration.contractAddress;
-  // Deploy a new contract
+  // Deploy a new RMRK contract
   if (configuration.baseUri && !configuration.contractAddress) {
     contractAddress = await deployRmrkContract(
+      signer,
       configuration.name,
       configuration.symbol,
       configuration.baseUri,
@@ -82,23 +85,17 @@ export const buildCollection = async (
     );
   }
 
-  // Create catalog.
-  const catalog = await createCatalog(
-    contractAddress,
-    configuration.numberOfEquippableSlots,
-    basePath,
-    configuration.collectionImagesUri
-  );
+  // Build catalog. A lot of magic happens inside.
+  const { contractAddress: catalogAddress, catalog } = await buildCatalog(basePath);
 
-  // Write metadata.
+  // Write toke metadata. Each token has one json file with metadata.
   if (!configuration.baseUri) {
     writeTokenMetadata(basePath, catalog, configuration);
     return;
   }
 
-  // Create contract instance.
+  // Get RMRK contract instance.
   const contract = await getContract(contractAddress);
-  calls.push(await getCall(contract, 'base::addPartList', signer, catalog));
 
   // Mint tokens
   calls.push(
@@ -111,9 +108,9 @@ export const buildCollection = async (
     )
   );
 
-  // Execute mintMany and addPartList calls
+  // Execute mintMany call.
   console.log(
-    `Executing  mintMany and addPartList calls. Number of calls ${calls.length}`
+    `Executing  mintMany. Number of calls ${calls.length}`
   );
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
@@ -126,20 +123,17 @@ export const buildCollection = async (
     equippableSlots.push(i);
   }
 
-  for (
-    let i = 0;
-    i < assetsCount;
-    i++
-  ) {
+  for (let i = 0; i < assetsCount; i++) {
     calls.push(
       await getCall(
         contract,
         'multiAsset::addAssetEntry',
         signer,
+        catalogAddress, // Catalog address
         (i + 1).toString(), // Asset id
         '0', // Equippable group id
         catalog[i].partUri, // Asset uri
-        [i, ...equippableSlots]
+        [i, ...equippableSlots] // Fixed and equippable slots
       )
     );
   }
@@ -210,77 +204,6 @@ export const buildCollection = async (
   return contractAddress;
 };
 
-/**
- * Creates a NFT catalog from a directory structure.
- * Catalog files are organized in subfolders under imagesPath folder.
- * Files that belongs to the same layer should be stored in the same folder. Folder name should be something like z_something,
- * where z is z index.
- * @param contractAddress NFT contract address
- * @param numberOfSlots Number of equippable slots to create
- * @param assetsPath Path to the folder with images organized in subfolders.
- * @param imagesUri CID of imagesPath folder deployed on IPFS.
- * @returns IBasePart[]
- */
-export const createCatalog = async (
-  contractAddress: string,
-  numberOfSlots: number,
-  basePath: string,
-  imagesUri: string
-): Promise<IBasePart[]> => {
-  const result: IBasePart[] = [];
-  const fixedParts: number[] = [];
-  const assetsPath = `${basePath}assets`;
-
-  console.log('Creating a catalog');
-  // Create fixed parts.
-  // TODO see how to exclude hidden files (e.g. .DS_Store)
-  const folders = fs
-    .readdirSync(assetsPath, { withFileTypes: true })
-    .filter((x) => x.isDirectory() && x.name !== '.DS_Store')
-    .map((x) => x.name);
-
-  for (let folder of folders) {
-    const z = parseInt(folder.split('_')[0]);
-    fixedParts.push(z);
-    const files = await fs.promises.readdir(`${assetsPath}/${folder}`);
-    for (let file of files.filter((x) => x !== '.DS_Store')) {
-      result.push({
-        partType: 'Fixed',
-        partUri: `${imagesUri}/${folder}/${file}`,
-        z,
-      });
-    }
-  }
-
-  // Create slots. Assumption, slots z order fills holes between fixed parts z indices.
-  let slotsAdded = 0;
-  for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
-    if (slotsAdded >= numberOfSlots) {
-      break;
-    }
-
-    if (fixedParts.indexOf(i) === -1) {
-      result.push({
-        partType: 'Slot',
-        equippable: [contractAddress],
-        z: i,
-      });
-      slotsAdded++;
-    }
-  }
-
-  return result;
-};
-
-const loadConfiguration = (assetsPath: string): CollectionConfiguration => {
-  console.log(`Loading collection configuration from ${assetsPath}`);
-  const config = JSON.parse(
-    fs.readFileSync(`${assetsPath}configuration.json`, 'utf-8')
-  );
-
-  return <CollectionConfiguration>config;
-};
-
 const writeTokenMetadata = (
   basePath: string,
   parts: IBasePart[],
@@ -319,14 +242,13 @@ const run = async (): Promise<void> => {
   // Base contract
   const baseAddress = await buildCollection('../collections/starduster/');
   // Child contracts
-  await buildCollection('../collections/starduster-eyes/', baseAddress);
-  await buildCollection('../collections/starduster-mouths/', baseAddress);
-  await buildCollection('../collections/starduster-headwear/', baseAddress);
-  await buildCollection('../collections/starduster-farts/', baseAddress);
-  
+  // await buildCollection('../collections/starduster-eyes/', baseAddress);
+  // await buildCollection('../collections/starduster-mouths/', baseAddress);
+  // await buildCollection('../collections/starduster-headwear/', baseAddress);
+  // await buildCollection('../collections/starduster-farts/', baseAddress);
+
   console.log('\nBase contract address ', baseAddress);
   process.exit(0);
 };
 
 run();
-

@@ -3,17 +3,18 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import { Abi, ContractPromise } from '@polkadot/api-contract';
 import { WeightV2, DispatchError } from '@polkadot/types/interfaces';
 import { ISubmittableResult } from '@polkadot/types/types';
-import { rmrkAbi } from '../abi/rmrk';
 import { ApiBase } from '@polkadot/api/base';
 import Contract from './typed_contracts/contracts/rmrk_contract';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
+import catalogAbi from '../contract/catalog_contract.json';
+import rmrkAbi from '../contract/rmrk_contract.json';
 
 export interface WeightInfo {
   proofSize: bigint;
   refTime: bigint;
 }
 
-const WSS_ENDPOINT = 'ws://localhost:9944';
+const WSS_ENDPOINT = 'ws://127.0.0.1:9944';
 // const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 let api: ApiPromise;
@@ -35,6 +36,15 @@ export const getContract = async (
 ): Promise<ContractPromise> => {
   const api = await getApi();
   const abi = new Abi(rmrkAbi, api.registry.getChainProperties());
+
+  return new ContractPromise(api, abi, address);
+};
+
+export const getCatalogContract = async (
+  address: string
+): Promise<ContractPromise> => {
+  const api = await getApi();
+  const abi = new Abi(catalogAbi, api.registry.getChainProperties());
 
   return new ContractPromise(api, abi, address);
 };
