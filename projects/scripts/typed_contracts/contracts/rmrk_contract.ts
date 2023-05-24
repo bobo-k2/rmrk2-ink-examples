@@ -4,7 +4,7 @@ import type { ApiPromise } from '@polkadot/api';
 import { Abi } from '@polkadot/api-contract';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import { ContractPromise } from '@polkadot/api-contract';
-import ABI from '../../../contract/rmrk_contract.json';
+import ABI from '../../../contract/rmrk_example_equippable_lazy.json';
 import QueryMethods from '../query/rmrk_contract';
 import BuildExtrinsicMethods from '../build-extrinsic/rmrk_contract';
 import TxSignAndSendMethods from '../tx-sign-and-send/rmrk_contract';

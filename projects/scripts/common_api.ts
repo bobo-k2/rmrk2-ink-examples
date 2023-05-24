@@ -7,7 +7,7 @@ import { ApiBase } from '@polkadot/api/base';
 import Contract from './typed_contracts/contracts/rmrk_contract';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import catalogAbi from '../contract/catalog_contract.json';
-import rmrkAbi from '../contract/rmrk_contract.json';
+import rmrkAbi from '../contract/rmrk_example_equippable_lazy.json';
 
 export interface WeightInfo {
   proofSize: bigint;
@@ -172,7 +172,7 @@ export const getCall = async (
 
   const extrinsic = contract.tx[call](
     {
-      gasLimit: txResult.gasRequired, // doubleGasLimit(contract.api, txResult.gasRequired),
+      gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
       storageDepositLimit: txResult.storageDeposit.asCharge,
     },
     ...params

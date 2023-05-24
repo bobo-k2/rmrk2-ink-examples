@@ -32,7 +32,7 @@ import fs from 'fs';
 import path from 'path';
 import { IBasePart } from 'create_catalog';
 import { CollectionConfiguration, Metadata } from 'base';
-import { deployRmrkContract } from './deploy_contracts';
+import { deployProxyContract, deployRmrkContract } from './deploy_contracts';
 import {
   executeCall,
   executeCalls,
@@ -82,12 +82,18 @@ export const buildCollection = async (
     );
 
     console.log(
-      `Contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
+      `** Contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
     );
   }
 
   // Build catalog. A lot of magic happens inside.
   const { contractAddress: catalogAddress, catalog } = await buildCatalog(basePath);
+
+  // Deploy RMRK proxy contract
+  const proxyContractAddress = await deployProxyContract(contractAddress, catalogAddress, signer);
+  console.log(
+    `** Proxy contract for ${configuration.name} has been deployed at address ${proxyContractAddress}`
+  );
 
   // Write toke metadata. Each token has one json file with metadata.
   if (!configuration.baseUri) {
@@ -99,23 +105,23 @@ export const buildCollection = async (
   const contract = await getContract(contractAddress);
 
   // Mint tokens
-  calls.push(
-    await getCall(
-      contract,
-      'minting::mintMany',
-      signer,
-      signer.address,
-      configuration.maxSupply
-    )
-  );
+  // calls.push(
+  //   await getCall(
+  //     contract,
+  //     'minting::mintMany',
+  //     signer,
+  //     signer.address,
+  //     configuration.maxSupply
+  //   )
+  // );
 
-  // Execute mintMany call.
-  console.log(
-    `Executing  mintMany. Number of calls ${calls.length}`
-  );
-  await executeCalls(calls, signer);
-  console.log('Batch call executed.');
-  calls = [];
+  // // Execute mintMany call.
+  // console.log(
+  //   `Executing  mintMany. Number of calls ${calls.length}`
+  // );
+  // await executeCalls(calls, signer);
+  // console.log('Batch call executed.');
+  // calls = [];
 
   // Create assets
   const assetsCount = catalog.length - configuration.numberOfEquippableSlots;
@@ -145,34 +151,34 @@ export const buildCollection = async (
   console.log('Batch call executed.');
   calls = [];
 
-  for (let i = 0; i < assetsCount; i++) {
-    let tokens = [];
-    for (let j = i; j < configuration.maxSupply; j += assetsCount) {
-      tokens.push({ u64: j + 1 });
+  // for (let i = 0; i < assetsCount; i++) {
+  //   let tokens = [];
+  //   for (let j = i; j < configuration.maxSupply; j += assetsCount) {
+  //     tokens.push({ u64: j + 1 });
 
-      if (
-        tokens.length === MAX_CALL_SIZE ||
-        j + assetsCount >= configuration.maxSupply
-      ) {
-        calls.push(
-          await getCall(
-            contract,
-            'batchCalls::addAssetToManyTokens',
-            signer,
-            tokens, // Token Ids array
-            (i + 1).toString() // Asset Id
-          )
-        );
+  //     if (
+  //       tokens.length === MAX_CALL_SIZE ||
+  //       j + assetsCount >= configuration.maxSupply
+  //     ) {
+  //       calls.push(
+  //         await getCall(
+  //           contract,
+  //           'batchCalls::addAssetToManyTokens',
+  //           signer,
+  //           tokens, // Token Ids array
+  //           (i + 1).toString() // Asset Id
+  //         )
+  //       );
 
-        tokens = [];
-      }
-    }
-  }
+  //       tokens = [];
+  //     }
+  //   }
+  // }
 
-  // Execute all add asset to token calls
-  console.log('Executing addAssetToToken');
-  await executeCalls(calls, signer);
-  console.log('Batch call executed.');
+  // // Execute all add asset to token calls
+  // console.log('Executing addAssetToToken');
+  // await executeCalls(calls, signer);
+  // console.log('Batch call executed.');
 
   // Add child tokens
   if (parentContractAddress) {
@@ -261,9 +267,9 @@ const writeTokenMetadata = (
 
 const run = async (): Promise<void> => {
   // Base contract
-  const baseAddress = 'YYqUMH4vE1raeXwtorAZakaQFVjKZWimnkAevgJ6kd5CLmm'; // await buildCollection('../collections/starduster/');
+  const baseAddress = await buildCollection('../collections/starduster/');
   // Child contracts
-  await buildCollection('../collections/starduster-eyes/', baseAddress);
+  // await buildCollection('../collections/starduster-eyes/', baseAddress);
   // await buildCollection('../collections/starduster-mouths/', baseAddress);
   // await buildCollection('../collections/starduster-headwear/', baseAddress);
   // await buildCollection('../collections/starduster-farts/', baseAddress);

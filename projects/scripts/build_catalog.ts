@@ -21,7 +21,7 @@ export const buildCatalog = async (basePath: string): Promise<Catalog> => {
     signer
   );
   console.log(
-    `Catalog contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
+    `** Catalog contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
   );
 
   // Create catalog.
