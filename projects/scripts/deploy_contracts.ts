@@ -3,7 +3,7 @@ import { CodePromise } from '@polkadot/api-contract';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { WeightV2 } from '@polkadot/types/interfaces';
-import { getApi, getSigner } from './common_api';
+import { getApi, getErrorMessage, getSigner } from './common_api';
 import { ALICE_URI } from './secret'; // Send as deploy contract call parameter
 import Files from 'fs';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
@@ -26,13 +26,14 @@ export const deployRmrkContract = async (
     Files.readFileSync('../contract/rmrk_contract.contract').toString()
   );
   const code = new CodePromise(api, contract, contract.source.wasm);
+  
   const tx = code.tx['new']!(
     {
       gasLimit: api.registry.createType('WeightV2', {
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('100000000000000000000'),
+      storageDepositLimit: BigInt('30000000000000000000'),
     },
     name,
     symbol,
@@ -63,7 +64,7 @@ export const deployCatalogContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('100000000000000000000'),
+      storageDepositLimit: BigInt('30000000000000000000'),
     },
     catalogMetadataUri
   );
@@ -80,7 +81,9 @@ const signAndSend = async (
       if (result.isFinalized && !result.dispatchError) {
         resolve(result.contract.address.toHuman());
       } else if (result.isFinalized && result.dispatchError) {
-        reject(result.dispatchError.toHuman());
+        const error = getErrorMessage(result.dispatchError);
+        console.error(`isFinalized error: ${error}`)
+        reject(error);
       } else if (result.isError) {
         reject(result.toHuman());
       }
