@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x46bcc43fa494784045cdfb162e98902b54d17d0e05b27ddc06d8d44739e247ce",
+    "hash": "0x3484643e692bcc210d287a115a66f211e96df6e569248440debb6298cc5165c7",
     "language": "ink! 4.2.0",
     "compiler": "rustc 1.68.0-nightly",
     "build_info": {
@@ -41,6 +41,15 @@
               ],
               "type": 0
             }
+          },
+          {
+            "label": "mint_price",
+            "type": {
+              "displayName": [
+                "Balance"
+              ],
+              "type": 4
+            }
           }
         ],
         "default": false,
@@ -52,7 +61,7 @@
             "ink_primitives",
             "ConstructorResult"
           ],
-          "type": 4
+          "type": 6
         },
         "selector": "0x9bae9d5e"
       }
@@ -69,32 +78,32 @@
         "displayName": [
           "Balance"
         ],
-        "type": 11
+        "type": 4
       },
       "blockNumber": {
         "displayName": [
           "BlockNumber"
         ],
-        "type": 13
+        "type": 16
       },
       "chainExtension": {
         "displayName": [
           "ChainExtension"
         ],
-        "type": 14
+        "type": 17
       },
       "hash": {
         "displayName": [
           "Hash"
         ],
-        "type": 12
+        "type": 15
       },
       "maxEventTopics": 4,
       "timestamp": {
         "displayName": [
           "Timestamp"
         ],
-        "type": 3
+        "type": 5
       }
     },
     "events": [],
@@ -103,7 +112,7 @@
         "ink",
         "LangError"
       ],
-      "type": 6
+      "type": 7
     },
     "messages": [
       {
@@ -118,7 +127,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 7
+          "type": 8
         },
         "selector": "0xcfdd9aa2"
       },
@@ -126,7 +135,7 @@
         "args": [],
         "default": false,
         "docs": [],
-        "label": "get_rmrk_contract_address",
+        "label": "rmrk_contract_address",
         "mutates": false,
         "payable": false,
         "returnType": {
@@ -134,15 +143,15 @@
             "ink",
             "MessageResult"
           ],
-          "type": 10
+          "type": 13
         },
-        "selector": "0x86f5f7f2"
+        "selector": "0xc9c3b8c1"
       },
       {
         "args": [],
         "default": false,
         "docs": [],
-        "label": "get_catalog_contract_address",
+        "label": "catalog_contract_address",
         "mutates": false,
         "payable": false,
         "returnType": {
@@ -150,9 +159,103 @@
             "ink",
             "MessageResult"
           ],
-          "type": 10
+          "type": 13
         },
-        "selector": "0xba36e718"
+        "selector": "0x81bd656e"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [],
+        "label": "mint_price",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 14
+        },
+        "selector": "0x8264bff6"
+      },
+      {
+        "args": [
+          {
+            "label": "new_contract_address",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [],
+        "label": "set_rmrk_contract_address",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 8
+        },
+        "selector": "0xc08465bb"
+      },
+      {
+        "args": [
+          {
+            "label": "new_contract_address",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [],
+        "label": "set_catalog_contract_address",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 8
+        },
+        "selector": "0x03cdf4c4"
+      },
+      {
+        "args": [
+          {
+            "label": "new_mint_price",
+            "type": {
+              "displayName": [
+                "Balance"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [],
+        "label": "set_mint_price",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 8
+        },
+        "selector": "0xc59e30de"
       }
     ]
   },
@@ -163,30 +266,185 @@
           "fields": [
             {
               "layout": {
-                "leaf": {
-                  "key": "0x00000000",
-                  "ty": 0
+                "struct": {
+                  "fields": [
+                    {
+                      "layout": {
+                        "leaf": {
+                          "key": "0x00000000",
+                          "ty": 0
+                        }
+                      },
+                      "name": "owner"
+                    },
+                    {
+                      "layout": {
+                        "enum": {
+                          "dispatchKey": "0x00000000",
+                          "name": "Option",
+                          "variants": {
+                            "0": {
+                              "fields": [],
+                              "name": "None"
+                            },
+                            "1": {
+                              "fields": [
+                                {
+                                  "layout": {
+                                    "leaf": {
+                                      "key": "0x00000000",
+                                      "ty": 3
+                                    }
+                                  },
+                                  "name": "0"
+                                }
+                              ],
+                              "name": "Some"
+                            }
+                          }
+                        }
+                      },
+                      "name": "_reserved"
+                    }
+                  ],
+                  "name": "Data"
                 }
               },
-              "name": "rmrk_contract"
+              "name": "ownable"
             },
             {
               "layout": {
-                "leaf": {
-                  "key": "0x00000000",
-                  "ty": 0
+                "struct": {
+                  "fields": [
+                    {
+                      "layout": {
+                        "leaf": {
+                          "key": "0x00000000",
+                          "ty": 2
+                        }
+                      },
+                      "name": "status"
+                    },
+                    {
+                      "layout": {
+                        "enum": {
+                          "dispatchKey": "0x00000000",
+                          "name": "Option",
+                          "variants": {
+                            "0": {
+                              "fields": [],
+                              "name": "None"
+                            },
+                            "1": {
+                              "fields": [
+                                {
+                                  "layout": {
+                                    "leaf": {
+                                      "key": "0x00000000",
+                                      "ty": 3
+                                    }
+                                  },
+                                  "name": "0"
+                                }
+                              ],
+                              "name": "Some"
+                            }
+                          }
+                        }
+                      },
+                      "name": "_reserved"
+                    }
+                  ],
+                  "name": "Data"
                 }
               },
-              "name": "catalog_contract"
+              "name": "guard"
             },
             {
               "layout": {
-                "leaf": {
-                  "key": "0x00000000",
-                  "ty": 3
+                "struct": {
+                  "fields": [
+                    {
+                      "layout": {
+                        "enum": {
+                          "dispatchKey": "0x00000000",
+                          "name": "Option",
+                          "variants": {
+                            "0": {
+                              "fields": [],
+                              "name": "None"
+                            },
+                            "1": {
+                              "fields": [
+                                {
+                                  "layout": {
+                                    "leaf": {
+                                      "key": "0x00000000",
+                                      "ty": 0
+                                    }
+                                  },
+                                  "name": "0"
+                                }
+                              ],
+                              "name": "Some"
+                            }
+                          }
+                        }
+                      },
+                      "name": "rmrk_contract"
+                    },
+                    {
+                      "layout": {
+                        "enum": {
+                          "dispatchKey": "0x00000000",
+                          "name": "Option",
+                          "variants": {
+                            "0": {
+                              "fields": [],
+                              "name": "None"
+                            },
+                            "1": {
+                              "fields": [
+                                {
+                                  "layout": {
+                                    "leaf": {
+                                      "key": "0x00000000",
+                                      "ty": 0
+                                    }
+                                  },
+                                  "name": "0"
+                                }
+                              ],
+                              "name": "Some"
+                            }
+                          }
+                        }
+                      },
+                      "name": "catalog_contract"
+                    },
+                    {
+                      "layout": {
+                        "leaf": {
+                          "key": "0x00000000",
+                          "ty": 4
+                        }
+                      },
+                      "name": "mint_price"
+                    },
+                    {
+                      "layout": {
+                        "leaf": {
+                          "key": "0x00000000",
+                          "ty": 5
+                        }
+                      },
+                      "name": "salt"
+                    }
+                  ],
+                  "name": "Data"
                 }
               },
-              "name": "salt"
+              "name": "proxy"
             }
           ],
           "name": "RmrkProxy"
@@ -239,7 +497,7 @@
       "id": 3,
       "type": {
         "def": {
-          "primitive": "u64"
+          "tuple": []
         }
       }
     },
@@ -247,12 +505,28 @@
       "id": 4,
       "type": {
         "def": {
+          "primitive": "u128"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": {
+        "def": {
+          "primitive": "u64"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": {
           "variant": {
             "variants": [
               {
                 "fields": [
                   {
-                    "type": 5
+                    "type": 3
                   }
                 ],
                 "index": 0,
@@ -261,7 +535,7 @@
               {
                 "fields": [
                   {
-                    "type": 6
+                    "type": 7
                   }
                 ],
                 "index": 1,
@@ -273,11 +547,11 @@
         "params": [
           {
             "name": "T",
-            "type": 5
+            "type": 3
           },
           {
             "name": "E",
-            "type": 6
+            "type": 7
           }
         ],
         "path": [
@@ -286,15 +560,7 @@
       }
     },
     {
-      "id": 5,
-      "type": {
-        "def": {
-          "tuple": []
-        }
-      }
-    },
-    {
-      "id": 6,
+      "id": 7,
       "type": {
         "def": {
           "variant": {
@@ -313,48 +579,6 @@
       }
     },
     {
-      "id": 7,
-      "type": {
-        "def": {
-          "variant": {
-            "variants": [
-              {
-                "fields": [
-                  {
-                    "type": 8
-                  }
-                ],
-                "index": 0,
-                "name": "Ok"
-              },
-              {
-                "fields": [
-                  {
-                    "type": 6
-                  }
-                ],
-                "index": 1,
-                "name": "Err"
-              }
-            ]
-          }
-        },
-        "params": [
-          {
-            "name": "T",
-            "type": 8
-          },
-          {
-            "name": "E",
-            "type": 6
-          }
-        ],
-        "path": [
-          "Result"
-        ]
-      }
-    },
-    {
       "id": 8,
       "type": {
         "def": {
@@ -363,7 +587,7 @@
               {
                 "fields": [
                   {
-                    "type": 5
+                    "type": 9
                   }
                 ],
                 "index": 0,
@@ -372,7 +596,7 @@
               {
                 "fields": [
                   {
-                    "type": 9
+                    "type": 7
                   }
                 ],
                 "index": 1,
@@ -384,11 +608,11 @@
         "params": [
           {
             "name": "T",
-            "type": 5
+            "type": 9
           },
           {
             "name": "E",
-            "type": 9
+            "type": 7
           }
         ],
         "path": [
@@ -403,33 +627,151 @@
           "variant": {
             "variants": [
               {
+                "fields": [
+                  {
+                    "type": 3
+                  }
+                ],
                 "index": 0,
-                "name": "MintingError"
+                "name": "Ok"
               },
               {
+                "fields": [
+                  {
+                    "type": 10
+                  }
+                ],
                 "index": 1,
-                "name": "OwnershipTransferError"
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 3
+          },
+          {
+            "name": "E",
+            "type": 10
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 11,
+                    "typeName": "OwnableError"
+                  }
+                ],
+                "index": 0,
+                "name": "OwnableError"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 12,
+                    "typeName": "ReentrancyGuardError"
+                  }
+                ],
+                "index": 1,
+                "name": "ReentrancyError"
               },
               {
                 "index": 2,
-                "name": "NoAssetsDefined"
+                "name": "MintingError"
               },
               {
                 "index": 3,
-                "name": "TooManyAssets"
+                "name": "OwnershipTransferError"
+              },
+              {
+                "index": 4,
+                "name": "AddTokenAssetError"
+              },
+              {
+                "index": 5,
+                "name": "NoAssetsDefined"
+              },
+              {
+                "index": 6,
+                "name": "TooManyAssetsDefined"
+              },
+              {
+                "index": 7,
+                "name": "BadMintValue"
               }
             ]
           }
         },
         "path": [
           "rmrk_proxy",
-          "rmrk_proxy",
-          "Error"
+          "types",
+          "ProxyError"
         ]
       }
     },
     {
-      "id": 10,
+      "id": 11,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "CallerIsNotOwner"
+              },
+              {
+                "index": 1,
+                "name": "NewOwnerIsZero"
+              }
+            ]
+          }
+        },
+        "path": [
+          "openbrush_contracts",
+          "traits",
+          "errors",
+          "ownable",
+          "OwnableError"
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "ReentrantCall"
+              }
+            ]
+          }
+        },
+        "path": [
+          "openbrush_contracts",
+          "traits",
+          "errors",
+          "reentrancy_guard",
+          "ReentrancyGuardError"
+        ]
+      }
+    },
+    {
+      "id": 13,
       "type": {
         "def": {
           "variant": {
@@ -446,7 +788,7 @@
               {
                 "fields": [
                   {
-                    "type": 6
+                    "type": 7
                   }
                 ],
                 "index": 1,
@@ -462,7 +804,7 @@
           },
           {
             "name": "E",
-            "type": 6
+            "type": 7
           }
         ],
         "path": [
@@ -471,15 +813,49 @@
       }
     },
     {
-      "id": 11,
+      "id": 14,
       "type": {
         "def": {
-          "primitive": "u128"
-        }
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 7
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 4
+          },
+          {
+            "name": "E",
+            "type": 7
+          }
+        ],
+        "path": [
+          "Result"
+        ]
       }
     },
     {
-      "id": 12,
+      "id": 15,
       "type": {
         "def": {
           "composite": {
@@ -499,7 +875,7 @@
       }
     },
     {
-      "id": 13,
+      "id": 16,
       "type": {
         "def": {
           "primitive": "u32"
@@ -507,7 +883,7 @@
       }
     },
     {
-      "id": 14,
+      "id": 17,
       "type": {
         "def": {
           "variant": {}

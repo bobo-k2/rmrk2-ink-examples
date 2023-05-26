@@ -87,10 +87,17 @@ export const buildCollection = async (
   }
 
   // Build catalog. A lot of magic happens inside.
-  const { contractAddress: catalogAddress, catalog } = await buildCatalog(basePath);
+  const { contractAddress: catalogAddress, catalog } = await buildCatalog(
+    basePath
+  );
 
   // Deploy RMRK proxy contract
-  const proxyContractAddress = await deployProxyContract(contractAddress, catalogAddress, signer);
+  const proxyContractAddress = await deployProxyContract(
+    contractAddress,
+    catalogAddress,
+    BigInt(configuration.pricePerMint),
+    signer
+  );
   console.log(
     `** Proxy contract for ${configuration.name} has been deployed at address ${proxyContractAddress}`
   );
@@ -204,10 +211,7 @@ export const buildCollection = async (
     for (let i = 0; i < configuration.maxSupply; i++) {
       tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
 
-      if (
-        tokenPairs.length === 2 ||
-        i + 1 >= configuration.maxSupply
-      ) {
+      if (tokenPairs.length === 2 || i + 1 >= configuration.maxSupply) {
         calls.push(
           await getCall(
             parentContract,

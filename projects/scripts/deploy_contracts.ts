@@ -75,6 +75,7 @@ export const deployCatalogContract = async (
 export const deployProxyContract = async (
   rmrkAddress: string,
   catalogAddress: string,
+  pricePerMint: bigint,
   signer: KeyringPair
 ) => {
   console.log(`Deploying RMRK proxy smart contract`);
@@ -92,7 +93,8 @@ export const deployProxyContract = async (
       storageDepositLimit: BigInt('30000000000000000000'),
     },
     rmrkAddress,
-    catalogAddress
+    catalogAddress,
+    pricePerMint
   );
 
   return await signAndSend(tx, signer);
