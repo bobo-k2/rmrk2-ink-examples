@@ -206,29 +206,29 @@ export const buildCollection = async (
       true
     );
 
-    const parentContract = await getContract(parentContractAddress);
-    let tokenPairs = [];
-    for (let i = 0; i < configuration.maxSupply; i++) {
-      tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
+    // const parentContract = await getContract(parentContractAddress);
+    // let tokenPairs = [];
+    // for (let i = 0; i < configuration.maxSupply; i++) {
+    //   tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
 
-      if (tokenPairs.length === 2 || i + 1 >= configuration.maxSupply) {
-        calls.push(
-          await getCall(
-            parentContract,
-            'batchCalls::addManyChildren',
-            signer,
-            contractAddress,
-            tokenPairs
-          )
-        );
+    //   if (tokenPairs.length === 2 || i + 1 >= configuration.maxSupply) {
+    //     calls.push(
+    //       await getCall(
+    //         parentContract,
+    //         'batchCalls::addManyChildren',
+    //         signer,
+    //         contractAddress,
+    //         tokenPairs
+    //       )
+    //     );
 
-        tokenPairs = [];
-      }
-    }
+    //     tokenPairs = [];
+    //   }
+    // }
 
-    console.log('Executing addChild batch');
-    await executeCalls(calls, signer);
-    console.log('Batch call executed.');
+    // console.log('Executing addChild batch');
+    // await executeCalls(calls, signer);
+    // console.log('Batch call executed.');
   }
 
   console.log('Script completed');
@@ -271,12 +271,13 @@ const writeTokenMetadata = (
 
 const run = async (): Promise<void> => {
   // Base contract
-  const baseAddress = await buildCollection('../collections/starduster/');
+  // const baseAddress = await buildCollection('../collections/starduster/');
+  const baseAddress = 'W31sRs7oHgzYTLa2xoVR8yU6dXC3GnUBBMQo2HoCY4Fneyq';
   // Child contracts
   // await buildCollection('../collections/starduster-eyes/', baseAddress);
   // await buildCollection('../collections/starduster-mouths/', baseAddress);
   // await buildCollection('../collections/starduster-headwear/', baseAddress);
-  // await buildCollection('../collections/starduster-farts/', baseAddress);
+  await buildCollection('../collections/starduster-farts/', baseAddress);
 
   console.log('\nBase contract address ', baseAddress);
   process.exit(0);
