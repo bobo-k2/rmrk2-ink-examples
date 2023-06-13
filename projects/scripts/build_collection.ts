@@ -14,16 +14,16 @@
 // 1. Deploy assets folder (deploy folder, not files) to IPFS and update collectionImagesUri in the collection configuration.json
 // 2. Deploy collection.json to IPFS and update collectionMetadataUri in the collection configuration.json.
 // 3. Run build collection script (WARNING! baseUri configuration parameter should be empty).
-//    This step will generate NFTs metadata only
+//    This step will generate NFTs metadata only (see newly create metadata folder).
 // 4. Deploy metadata folder (deploy folder, not files) to IPFS and update baseUri baseUri in the collection configuration.json
-// 5. Run build collection script once again to deploy contract and create collection.
+// 5. Run build collection script once again to deploy contracts
+//    - Three contracts will be deployed: collection, catalog and proxy.
+//      Collection is main contract and it will hold all tokens.
+//      Catalog contains parts that can be used as assets for tokens.
+//      Proxy is a contract that allows users to mint tokens.
 
 // How to allow equipping to base (i.e. there are 2 RMRK contracts, one with base parts and another with equippables)
-// 1. On base call base::addEquippableAddresses for all equippable slots
-// 2. Call psp34::approve on child to approve base.
-// 3.??????  On child contract call equippable::setValidParentForEqquippableGroup
-// 4. Add child to base. On base call nesting::addChild
-// 5. Call equippable::equip on base
+// 1. On base NFT catalog contract call base::addEquippableAddresses for equippable part and provide equippable contract address.
 
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
@@ -189,22 +189,22 @@ export const buildCollection = async (
 
   // Add child tokens
   if (parentContractAddress) {
-    calls = [];
-    // Generate array from 1 to maxSupply and shuffle members.
-    const shuffledTokenIds = Array.from(
-      { length: configuration.maxSupply },
-      (_, index) => index + 1
-    ).sort(() => Math.random() - 0.5);
+    // calls = [];
+    // // Generate array from 1 to maxSupply and shuffle members.
+    // const shuffledTokenIds = Array.from(
+    //   { length: configuration.maxSupply },
+    //   (_, index) => index + 1
+    // ).sort(() => Math.random() - 0.5);
 
-    // Approve parent
-    await executeCall(
-      contract,
-      'psp34::approve',
-      signer,
-      parentContractAddress,
-      null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
-      true
-    );
+    // // Approve parent
+    // await executeCall(
+    //   contract,
+    //   'psp34::approve',
+    //   signer,
+    //   parentContractAddress,
+    //   null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
+    //   true
+    // );
 
     // const parentContract = await getContract(parentContractAddress);
     // let tokenPairs = [];
@@ -270,17 +270,24 @@ const writeTokenMetadata = (
 };
 
 const run = async (): Promise<void> => {
-  // Base contract
-  // const baseAddress = await buildCollection('../collections/starduster/');
-  const baseAddress = 'W31sRs7oHgzYTLa2xoVR8yU6dXC3GnUBBMQo2HoCY4Fneyq';
-  // Child contracts
-  // await buildCollection('../collections/starduster-eyes/', baseAddress);
-  // await buildCollection('../collections/starduster-mouths/', baseAddress);
-  // await buildCollection('../collections/starduster-headwear/', baseAddress);
-  await buildCollection('../collections/starduster-farts/', baseAddress);
+  if (process.argv.length < 3) {
+    // Deploy base contracts
+    const baseAddress = await buildCollection('../collections/starduster/');
 
-  console.log('\nBase contract address ', baseAddress);
-  process.exit(0);
+    // Deploy child contracts. I you aleady deployed base contracts, comment the line above, uncomment the line below and set
+    // collection contract address.
+    // const baseAddress = 'W31sRs7oHgzYTLa2xoVR8yU6dXC3GnUBBMQo2HoCY4Fneyq';
+    await buildCollection('../collections/starduster-eyes/', baseAddress);
+    await buildCollection('../collections/starduster-mouths/', baseAddress);
+    await buildCollection('../collections/starduster-headwear/', baseAddress);
+    await buildCollection('../collections/starduster-farts/', baseAddress);
+
+    console.log('\nBase contract address ', baseAddress);
+    process.exit(0);
+  } else {
+    // Build collection
+    await buildCollection(process.argv[2]);
+  }
 };
 
 run();

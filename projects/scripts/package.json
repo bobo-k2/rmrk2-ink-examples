@@ -10,6 +10,7 @@
     "build-token-parts": "ts-node run.ts token-parts",
     "run-all": "ts-node run.ts all",
     "read-token": "ts-node read_token.ts",
+    "deploy-collection": "ts-node build_collection.ts",
     "generate-types": "npx @727-ventures/typechain-polkadot --in ../contract --out typed_contracts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

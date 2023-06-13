@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0xe1517075f6cc8935a93c6f3e27e237c9bef2b6e367724c991c4cced792be5ae2",
+    "hash": "0xcc56466b1d0e58527bfd29b19c0b5bf57b48c694acea95751f5f2873b9f74a91",
     "language": "ink! 4.2.0",
     "compiler": "rustc 1.68.0-nightly",
     "build_info": {
@@ -90,13 +90,13 @@
         "displayName": [
           "ChainExtension"
         ],
-        "type": 22
+        "type": 23
       },
       "hash": {
         "displayName": [
           "Hash"
         ],
-        "type": 21
+        "type": 22
       },
       "maxEventTopics": 4,
       "timestamp": {
@@ -106,7 +106,38 @@
         "type": 5
       }
     },
-    "events": [],
+    "events": [
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "id",
+            "type": {
+              "displayName": [
+                "Id"
+              ],
+              "type": 10
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "price",
+            "type": {
+              "displayName": [
+                "Option"
+              ],
+              "type": 21
+            }
+          }
+        ],
+        "docs": [
+          "Event emitted when token is minted."
+        ],
+        "label": "TokenMinted"
+      }
+    ],
     "lang_error": {
       "displayName": [
         "ink",
@@ -1059,6 +1090,39 @@
       "id": 21,
       "type": {
         "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 4
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "type": {
+        "def": {
           "composite": {
             "fields": [
               {
@@ -1076,7 +1140,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 23,
       "type": {
         "def": {
           "variant": {}
