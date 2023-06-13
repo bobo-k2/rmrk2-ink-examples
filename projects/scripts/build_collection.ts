@@ -14,16 +14,16 @@
 // 1. Deploy assets folder (deploy folder, not files) to IPFS and update collectionImagesUri in the collection configuration.json
 // 2. Deploy collection.json to IPFS and update collectionMetadataUri in the collection configuration.json.
 // 3. Run build collection script (WARNING! baseUri configuration parameter should be empty).
-//    This step will generate NFTs metadata only
+//    This step will generate NFTs metadata only (see newly create metadata folder).
 // 4. Deploy metadata folder (deploy folder, not files) to IPFS and update baseUri baseUri in the collection configuration.json
-// 5. Run build collection script once again to deploy contract and create collection.
+// 5. Run build collection script once again to deploy contracts
+//    - Three contracts will be deployed: collection, catalog and proxy.
+//      Collection is main contract and it will hold all tokens.
+//      Catalog contains parts that can be used as assets for tokens.
+//      Proxy is a contract that allows users to mint tokens.
 
 // How to allow equipping to base (i.e. there are 2 RMRK contracts, one with base parts and another with equippables)
-// 1. On base call base::addEquippableAddresses for all equippable slots
-// 2. Call psp34::approve on child to approve base.
-// 3.??????  On child contract call equippable::setValidParentForEqquippableGroup
-// 4. Add child to base. On base call nesting::addChild
-// 5. Call equippable::equip on base
+// 1. On base NFT catalog contract call base::addEquippableAddresses for equippable part and provide equippable contract address.
 
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
@@ -32,7 +32,7 @@ import fs from 'fs';
 import path from 'path';
 import { IBasePart } from 'create_catalog';
 import { CollectionConfiguration, Metadata } from 'base';
-import { deployRmrkContract } from './deploy_contracts';
+import { deployProxyContract, deployRmrkContract } from './deploy_contracts';
 import {
   executeCall,
   executeCalls,
@@ -56,6 +56,7 @@ export const buildCollection = async (
   basePath: string,
   parentContractAddress: string = undefined
 ): Promise<string> => {
+  const MAX_CALL_SIZE = 50; // Max length of array passed to a contract call.
   let calls: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
   await cryptoWaitReady();
@@ -81,12 +82,25 @@ export const buildCollection = async (
     );
 
     console.log(
-      `Contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
+      `** Contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
     );
   }
 
   // Build catalog. A lot of magic happens inside.
-  const { contractAddress: catalogAddress, catalog } = await buildCatalog(basePath);
+  const { contractAddress: catalogAddress, catalog } = await buildCatalog(
+    basePath
+  );
+
+  // Deploy RMRK proxy contract
+  const proxyContractAddress = await deployProxyContract(
+    contractAddress,
+    catalogAddress,
+    BigInt(configuration.pricePerMint),
+    signer
+  );
+  console.log(
+    `** Proxy contract for ${configuration.name} has been deployed at address ${proxyContractAddress}`
+  );
 
   // Write toke metadata. Each token has one json file with metadata.
   if (!configuration.baseUri) {
@@ -98,23 +112,23 @@ export const buildCollection = async (
   const contract = await getContract(contractAddress);
 
   // Mint tokens
-  calls.push(
-    await getCall(
-      contract,
-      'minting::mintMany',
-      signer,
-      signer.address,
-      configuration.maxSupply
-    )
-  );
+  // calls.push(
+  //   await getCall(
+  //     contract,
+  //     'minting::mintMany',
+  //     signer,
+  //     signer.address,
+  //     configuration.maxSupply
+  //   )
+  // );
 
-  // Execute mintMany call.
-  console.log(
-    `Executing  mintMany. Number of calls ${calls.length}`
-  );
-  await executeCalls(calls, signer);
-  console.log('Batch call executed.');
-  calls = [];
+  // // Execute mintMany call.
+  // console.log(
+  //   `Executing  mintMany. Number of calls ${calls.length}`
+  // );
+  // await executeCalls(calls, signer);
+  // console.log('Batch call executed.');
+  // calls = [];
 
   // Create assets
   const assetsCount = catalog.length - configuration.numberOfEquippableSlots;
@@ -144,60 +158,77 @@ export const buildCollection = async (
   console.log('Batch call executed.');
   calls = [];
 
-  // Add assets to a token
-  for (let i = 0; i < configuration.maxSupply; i++) {
-    calls.push(
-      await getCall(
-        contract,
-        'multiAsset::addAssetToToken',
-        signer,
-        { u64: i + 1 }, // Token Id
-        ((i % assetsCount) + 1).toString(), // Asset Id
-        null
-      )
-    );
-  }
+  // for (let i = 0; i < assetsCount; i++) {
+  //   let tokens = [];
+  //   for (let j = i; j < configuration.maxSupply; j += assetsCount) {
+  //     tokens.push({ u64: j + 1 });
 
-  // Execute all add asset to token calls
-  console.log('Executing addAssetToToken');
-  await executeCalls(calls, signer);
-  console.log('Batch call executed.');
+  //     if (
+  //       tokens.length === MAX_CALL_SIZE ||
+  //       j + assetsCount >= configuration.maxSupply
+  //     ) {
+  //       calls.push(
+  //         await getCall(
+  //           contract,
+  //           'batchCalls::addAssetToManyTokens',
+  //           signer,
+  //           tokens, // Token Ids array
+  //           (i + 1).toString() // Asset Id
+  //         )
+  //       );
+
+  //       tokens = [];
+  //     }
+  //   }
+  // }
+
+  // // Execute all add asset to token calls
+  // console.log('Executing addAssetToToken');
+  // await executeCalls(calls, signer);
+  // console.log('Batch call executed.');
 
   // Add child tokens
   if (parentContractAddress) {
-    calls = [];
-    // Generate array from 1 to maxSupply and shuffle members.
-    const shuffledTokenIds = Array.from(
-      { length: configuration.maxSupply },
-      (_, index) => index + 1
-    ).sort(() => Math.random() - 0.5);
+    // calls = [];
+    // // Generate array from 1 to maxSupply and shuffle members.
+    // const shuffledTokenIds = Array.from(
+    //   { length: configuration.maxSupply },
+    //   (_, index) => index + 1
+    // ).sort(() => Math.random() - 0.5);
 
-    // Approve parent
-    await executeCall(
-      contract,
-      'psp34::approve',
-      signer,
-      parentContractAddress,
-      null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
-      true
-    );
+    // // Approve parent
+    // await executeCall(
+    //   contract,
+    //   'psp34::approve',
+    //   signer,
+    //   parentContractAddress,
+    //   null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
+    //   true
+    // );
 
-    const parentContract = await getContract(parentContractAddress);
-    for (let i = 0; i < configuration.maxSupply; i++) {
-      calls.push(
-        await getCall(
-          parentContract,
-          'nesting::addChild',
-          signer,
-          { u64: i + 1 }, // Parent token Id
-          [contractAddress, { u64: shuffledTokenIds[i] }]
-        )
-      );
-    }
+    // const parentContract = await getContract(parentContractAddress);
+    // let tokenPairs = [];
+    // for (let i = 0; i < configuration.maxSupply; i++) {
+    //   tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
 
-    console.log('Executing addChild batch');
-    await executeCalls(calls, signer);
-    console.log('Batch call executed.');
+    //   if (tokenPairs.length === 2 || i + 1 >= configuration.maxSupply) {
+    //     calls.push(
+    //       await getCall(
+    //         parentContract,
+    //         'batchCalls::addManyChildren',
+    //         signer,
+    //         contractAddress,
+    //         tokenPairs
+    //       )
+    //     );
+
+    //     tokenPairs = [];
+    //   }
+    // }
+
+    // console.log('Executing addChild batch');
+    // await executeCalls(calls, signer);
+    // console.log('Batch call executed.');
   }
 
   console.log('Script completed');
@@ -239,16 +270,24 @@ const writeTokenMetadata = (
 };
 
 const run = async (): Promise<void> => {
-  // Base contract
-  const baseAddress = await buildCollection('../collections/starduster/');
-  // Child contracts
-  // await buildCollection('../collections/starduster-eyes/', baseAddress);
-  // await buildCollection('../collections/starduster-mouths/', baseAddress);
-  // await buildCollection('../collections/starduster-headwear/', baseAddress);
-  // await buildCollection('../collections/starduster-farts/', baseAddress);
+  if (process.argv.length < 3) {
+    // Deploy base contracts
+    const baseAddress = await buildCollection('../collections/starduster/');
 
-  console.log('\nBase contract address ', baseAddress);
-  process.exit(0);
+    // Deploy child contracts. I you aleady deployed base contracts, comment the line above, uncomment the line below and set
+    // collection contract address.
+    // const baseAddress = 'W31sRs7oHgzYTLa2xoVR8yU6dXC3GnUBBMQo2HoCY4Fneyq';
+    await buildCollection('../collections/starduster-eyes/', baseAddress);
+    await buildCollection('../collections/starduster-mouths/', baseAddress);
+    await buildCollection('../collections/starduster-headwear/', baseAddress);
+    await buildCollection('../collections/starduster-farts/', baseAddress);
+
+    console.log('\nBase contract address ', baseAddress);
+    process.exit(0);
+  } else {
+    // Build collection
+    await buildCollection(process.argv[2]);
+  }
 };
 
 run();

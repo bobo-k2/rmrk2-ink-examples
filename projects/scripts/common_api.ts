@@ -7,15 +7,15 @@ import { ApiBase } from '@polkadot/api/base';
 import Contract from './typed_contracts/contracts/rmrk_contract';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import catalogAbi from '../contract/catalog_contract.json';
-import rmrkAbi from '../contract/rmrk_contract.json';
+import rmrkAbi from '../contract/rmrk_example_equippable_lazy.json';
 
 export interface WeightInfo {
   proofSize: bigint;
   refTime: bigint;
 }
 
-const WSS_ENDPOINT = 'ws://127.0.0.1:9944';
-// const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
+// const WSS_ENDPOINT = 'ws://127.0.0.1:9944';
+const WSS_ENDPOINT = 'wss://rpc.shibuya.astar.network';
 
 let api: ApiPromise;
 
@@ -123,8 +123,8 @@ export const executeCallWithValue = async (
     contract.tx[call](
       {
         //gasLimit: getGasLimit(contract.api, true),
-        gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
-        storageDepositLimit: null,
+        gasLimit: txResult.gasRequired, // doubleGasLimit(contract.api, txResult.gasRequired),
+        storageDepositLimit: txResult.storageDeposit.asCharge,
         value: value ?? 0,
       },
       ...params
@@ -173,7 +173,7 @@ export const getCall = async (
   const extrinsic = contract.tx[call](
     {
       gasLimit: doubleGasLimit(contract.api, txResult.gasRequired),
-      storageDepositLimit: null,
+      storageDepositLimit: txResult.storageDeposit.asCharge,
     },
     ...params
   );
@@ -189,13 +189,13 @@ export const executeCalls = async (
   const batches: SubmittableExtrinsic<'promise', ISubmittableResult>[][] = [];
   // Create batch of batches, each batch to use about a half of max block weight.
   const refTime = gasLimit.refTime.toBigInt() / BigInt(2);
-  const proofSize = gasLimit.proofSize.toBigInt() / BigInt(2)
+  const proofSize = gasLimit.proofSize.toBigInt() / BigInt(2);
   let currentRefTime = BigInt(0);
   let currentProofSize = BigInt(0);
-  let currentBatch:SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
+  let currentBatch: SubmittableExtrinsic<'promise', ISubmittableResult>[] = [];
 
-  for(const call of calls) {
-    if(currentRefTime > refTime || currentProofSize > proofSize) {
+  for (const call of calls) {
+    if (currentRefTime > refTime || currentProofSize > proofSize) {
       batches.push(currentBatch);
       currentBatch = [];
       currentProofSize = BigInt(0);
@@ -210,10 +210,10 @@ export const executeCalls = async (
 
   batches.push(currentBatch);
 
-  for(let i = 0; i < batches.length; i++ ) {
+  for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
-    console.log(`Executing batch ${ i+1 } / ${ batches.length }`)
-    await new Promise((resolve) => {
+    console.log(`Executing batch ${i + 1} / ${batches.length}`);
+    await new Promise((resolve, reject) => {
       api.tx.utility
         .batchAll(batch)
         .signAndSend(signer, (result: ISubmittableResult) => {
@@ -221,30 +221,15 @@ export const executeCalls = async (
             resolve(true);
           } else if (result.isFinalized && result.dispatchError) {
             console.error(getErrorMessage(result.dispatchError));
-            resolve(false);
+            reject(false);
           } else if (result.isError) {
-            resolve(false);
+            reject(false);
           }
         });
     });
   }
 
   return true;
-
-  // return new Promise((resolve) => {
-  //   api.tx.utility
-  //     .batchAll(calls)
-  //     .signAndSend(signer, (result: ISubmittableResult) => {
-  //       if (result.isFinalized && !result.dispatchError) {
-  //         resolve(true);
-  //       } else if (result.isFinalized && result.dispatchError) {
-  //         console.error(getErrorMessage(result.dispatchError));
-  //         resolve(false);
-  //       } else if (result.isError) {
-  //         resolve(false);
-  //       }
-  //     });
-  // });
 };
 
 export const getBatchWeight = async (
@@ -263,7 +248,7 @@ export const getBatchWeight = async (
   return result;
 };
 
-const getErrorMessage = (dispatchError: DispatchError): string => {
+export const getErrorMessage = (dispatchError: DispatchError): string => {
   let message = '';
   if (dispatchError.isModule) {
     try {

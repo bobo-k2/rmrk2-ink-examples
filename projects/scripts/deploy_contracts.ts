@@ -3,9 +3,9 @@ import { CodePromise } from '@polkadot/api-contract';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { WeightV2 } from '@polkadot/types/interfaces';
-import { getApi, getSigner } from './common_api';
+import { getApi, getErrorMessage, getSigner } from './common_api';
 import { ALICE_URI } from './secret'; // Send as deploy contract call parameter
-import Files from 'fs';
+import Files, { rm } from 'fs';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
 
@@ -23,16 +23,17 @@ export const deployRmrkContract = async (
   console.log(`Deploying RMRK smart contract for ${name}`);
   const api = await getApi();
   const contract = JSON.parse(
-    Files.readFileSync('../contract/rmrk_contract.contract').toString()
+    Files.readFileSync('../contract/rmrk_example_equippable_lazy.contract').toString()
   );
   const code = new CodePromise(api, contract, contract.source.wasm);
+  
   const tx = code.tx['new']!(
     {
       gasLimit: api.registry.createType('WeightV2', {
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('100000000000000000000'),
+      storageDepositLimit: BigInt('3000000000000000000'),
     },
     name,
     symbol,
@@ -63,9 +64,37 @@ export const deployCatalogContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('100000000000000000000'),
+      storageDepositLimit: BigInt('3000000000000000000'),
     },
     catalogMetadataUri
+  );
+
+  return await signAndSend(tx, signer);
+};
+
+export const deployProxyContract = async (
+  rmrkAddress: string,
+  catalogAddress: string,
+  pricePerMint: bigint,
+  signer: KeyringPair
+) => {
+  console.log(`Deploying RMRK proxy smart contract`);
+  const api = await getApi();
+  const contract = JSON.parse(
+    Files.readFileSync('../contract/rmrk_proxy.contract').toString()
+  );
+  const code = new CodePromise(api, contract, contract.source.wasm);
+  const tx = code.tx['new']!(
+    {
+      gasLimit: api.registry.createType('WeightV2', {
+        refTime: 2_000_000_000,
+        proofSize: 50_000,
+      }) as WeightV2,
+      storageDepositLimit: BigInt('3000000000000000000'),
+    },
+    rmrkAddress,
+    catalogAddress,
+    pricePerMint
   );
 
   return await signAndSend(tx, signer);
@@ -80,7 +109,9 @@ const signAndSend = async (
       if (result.isFinalized && !result.dispatchError) {
         resolve(result.contract.address.toHuman());
       } else if (result.isFinalized && result.dispatchError) {
-        reject(result.dispatchError.toHuman());
+        const error = getErrorMessage(result.dispatchError);
+        console.error(`isFinalized error: ${error}`)
+        reject(error);
       } else if (result.isError) {
         reject(result.toHuman());
       }
