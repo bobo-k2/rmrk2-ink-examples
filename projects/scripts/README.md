@@ -11,6 +11,9 @@ Each collection consists of three smart contracts:
 
 ## Environments setup
 Before script execution do the following
+- Clone this repo `git clone https://github.com/bobo-k2/rmrk2-ink-examples.git
+`
+- Install dependencies with `yarn` or `npm i`
 - Update `WSS_ENDPOINT` in [common_api.ts](./common_api.ts) to match endpoint of a chain where you want to deploy your collection (e.g. `wss://rpc.astar.network`)
 - Create `secret.ts` file under scripts folder and add the following line
   ```
