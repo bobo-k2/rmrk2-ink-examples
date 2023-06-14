@@ -110,26 +110,7 @@ export const buildCollection = async (
 
   // Get RMRK contract instance.
   const contract = await getContract(contractAddress);
-
-  // Mint tokens
-  // calls.push(
-  //   await getCall(
-  //     contract,
-  //     'minting::mintMany',
-  //     signer,
-  //     signer.address,
-  //     configuration.maxSupply
-  //   )
-  // );
-
-  // // Execute mintMany call.
-  // console.log(
-  //   `Executing  mintMany. Number of calls ${calls.length}`
-  // );
-  // await executeCalls(calls, signer);
-  // console.log('Batch call executed.');
-  // calls = [];
-
+  
   // Create assets
   const assetsCount = catalog.length - configuration.numberOfEquippableSlots;
   const equippableSlots: number[] = [];
@@ -157,79 +138,6 @@ export const buildCollection = async (
   await executeCalls(calls, signer);
   console.log('Batch call executed.');
   calls = [];
-
-  // for (let i = 0; i < assetsCount; i++) {
-  //   let tokens = [];
-  //   for (let j = i; j < configuration.maxSupply; j += assetsCount) {
-  //     tokens.push({ u64: j + 1 });
-
-  //     if (
-  //       tokens.length === MAX_CALL_SIZE ||
-  //       j + assetsCount >= configuration.maxSupply
-  //     ) {
-  //       calls.push(
-  //         await getCall(
-  //           contract,
-  //           'batchCalls::addAssetToManyTokens',
-  //           signer,
-  //           tokens, // Token Ids array
-  //           (i + 1).toString() // Asset Id
-  //         )
-  //       );
-
-  //       tokens = [];
-  //     }
-  //   }
-  // }
-
-  // // Execute all add asset to token calls
-  // console.log('Executing addAssetToToken');
-  // await executeCalls(calls, signer);
-  // console.log('Batch call executed.');
-
-  // Add child tokens
-  if (parentContractAddress) {
-    // calls = [];
-    // // Generate array from 1 to maxSupply and shuffle members.
-    // const shuffledTokenIds = Array.from(
-    //   { length: configuration.maxSupply },
-    //   (_, index) => index + 1
-    // ).sort(() => Math.random() - 0.5);
-
-    // // Approve parent
-    // await executeCall(
-    //   contract,
-    //   'psp34::approve',
-    //   signer,
-    //   parentContractAddress,
-    //   null, //Calling approve without providing token id allows contract owner to add child, TODO check the contract code.
-    //   true
-    // );
-
-    // const parentContract = await getContract(parentContractAddress);
-    // let tokenPairs = [];
-    // for (let i = 0; i < configuration.maxSupply; i++) {
-    //   tokenPairs.push([{ u64: i + 1 }, { u64: shuffledTokenIds[i] }]);
-
-    //   if (tokenPairs.length === 2 || i + 1 >= configuration.maxSupply) {
-    //     calls.push(
-    //       await getCall(
-    //         parentContract,
-    //         'batchCalls::addManyChildren',
-    //         signer,
-    //         contractAddress,
-    //         tokenPairs
-    //       )
-    //     );
-
-    //     tokenPairs = [];
-    //   }
-    // }
-
-    // console.log('Executing addChild batch');
-    // await executeCalls(calls, signer);
-    // console.log('Batch call executed.');
-  }
 
   console.log('Script completed');
   return contractAddress;
@@ -283,11 +191,12 @@ const run = async (): Promise<void> => {
     await buildCollection('../collections/starduster-farts/', baseAddress);
 
     console.log('\nBase contract address ', baseAddress);
-    process.exit(0);
   } else {
     // Build collection
     await buildCollection(process.argv[2]);
   }
+
+  process.exit(0);
 };
 
 run();

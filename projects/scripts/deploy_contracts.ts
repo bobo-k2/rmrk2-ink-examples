@@ -33,7 +33,7 @@ export const deployRmrkContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('3000000000000000000'),
+      storageDepositLimit: null, // TODO dryRun BigInt('3000000000000000000'),
     },
     name,
     symbol,
@@ -64,7 +64,7 @@ export const deployCatalogContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('3000000000000000000'),
+      storageDepositLimit: null, // TODO dryRun BigInt('3000000000000000000'),
     },
     catalogMetadataUri
   );
@@ -90,7 +90,7 @@ export const deployProxyContract = async (
         refTime: 2_000_000_000,
         proofSize: 50_000,
       }) as WeightV2,
-      storageDepositLimit: BigInt('3000000000000000000'),
+      storageDepositLimit: null, // TODO dryRun BigInt('3000000000000000000'),
     },
     rmrkAddress,
     catalogAddress,
