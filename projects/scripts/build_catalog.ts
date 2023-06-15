@@ -11,18 +11,24 @@ export interface Catalog {
   catalog: IBasePart[];
 }
 
-export const buildCatalog = async (basePath: string): Promise<Catalog> => {
+export const buildCatalog = async (
+  basePath: string,
+  deployContract: boolean
+): Promise<Catalog> => {
   await cryptoWaitReady();
   const signer = getSigner(ALICE_URI);
   const configuration = loadConfiguration(basePath);
+  let contractAddress = '';
 
-  const contractAddress = await deployCatalogContract(
-    configuration.catalogMetadataUri,
-    signer
-  );
-  console.log(
-    `** Catalog contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
-  );
+  if (deployContract) {
+    contractAddress = await deployCatalogContract(
+      configuration.catalogMetadataUri,
+      signer
+    );
+    console.log(
+      `** Catalog contract for collection ${configuration.name} has been deployed at address ${contractAddress}`
+    );
+  }
 
   // Create catalog.
   const catalog = await createCatalog(
@@ -31,8 +37,10 @@ export const buildCatalog = async (basePath: string): Promise<Catalog> => {
     configuration.collectionImagesUri
   );
 
-  const contract = await getCatalogContract(contractAddress);
-  await executeCall(contract, 'catalog::addPartList', signer, catalog);
+  if (deployContract) {
+    const contract = await getCatalogContract(contractAddress);
+    await executeCall(contract, 'catalog::addPartList', signer, catalog);
+  }
 
   return { contractAddress, catalog };
 };
@@ -100,7 +108,7 @@ const createCatalog = async (
 
 const run = async (): Promise<void> => {
   // Base contract
-  const catalogAddress = await buildCatalog('../collections/starduster/');
+  const catalogAddress = await buildCatalog('../collections/starduster/', true);
 
   console.log('\nBase contract address ', catalogAddress);
   process.exit(0);

@@ -66,6 +66,18 @@ export const buildCollection = async (
   const configuration = loadConfiguration(basePath);
   console.debug(configuration);
 
+  // Build catalog. A lot of magic happens inside.
+  const { contractAddress: catalogAddress, catalog } = await buildCatalog(
+    basePath,
+    configuration.baseUri !== ''
+  );
+
+  // Write toke metadata. Each token has one json file with metadata.
+  if (!configuration.baseUri) {
+    writeTokenMetadata(basePath, catalog, configuration);
+    return;
+  }
+
   let contractAddress = configuration.contractAddress;
   // Deploy a new RMRK contract
   if (configuration.baseUri && !configuration.contractAddress) {
@@ -86,11 +98,6 @@ export const buildCollection = async (
     );
   }
 
-  // Build catalog. A lot of magic happens inside.
-  const { contractAddress: catalogAddress, catalog } = await buildCatalog(
-    basePath
-  );
-
   // Deploy RMRK proxy contract
   const proxyContractAddress = await deployProxyContract(
     contractAddress,
@@ -102,15 +109,9 @@ export const buildCollection = async (
     `** Proxy contract for ${configuration.name} has been deployed at address ${proxyContractAddress}`
   );
 
-  // Write toke metadata. Each token has one json file with metadata.
-  if (!configuration.baseUri) {
-    writeTokenMetadata(basePath, catalog, configuration);
-    return;
-  }
-
   // Get RMRK contract instance.
   const contract = await getContract(contractAddress);
-  
+
   // Create assets
   const assetsCount = catalog.length - configuration.numberOfEquippableSlots;
   const equippableSlots: number[] = [];
